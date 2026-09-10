@@ -33,3 +33,16 @@ Para executar a aplicação utilizando o docker, utilize o seguinte comando na r
 docker compose up -d
 ```
 
+## Projeto original
+
+Este trabalho utiliza como base o projeto PDV, disponível em:
+
+https://github.com/repo-software-testing-courses/pdv
+
+O código-fonte original foi clonado do repositório acima e seu histórico
+Git foi preservado.
+
+Para permitir a execução do sistema no ambiente local utilizado pelo grupo,
+foram realizados ajustes de configuração nos arquivos `Dockerfile` e
+`docker-compose.yml`. As alterações realizadas podem ser consultadas no
+histórico de commits deste repositório.
