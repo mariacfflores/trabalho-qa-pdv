@@ -46,3 +46,34 @@ Para permitir a execução do sistema no ambiente local utilizado pelo grupo,
 foram realizados ajustes de configuração nos arquivos `Dockerfile` e
 `docker-compose.yml`. As alterações realizadas podem ser consultadas no
 histórico de commits deste repositório.
+
+
+# Evidências de Complexidade Ciclomática
+
+A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
+
+| Classe | Complexidade ciclomática |
+|---|---:|
+| CaixaService.java | 34 |
+| VendaService.java | 29 |
+| NotaFiscalItemService.java | 24 |
+| RecebimentoService.java | 20 |
+| CartaoLancamentoService.java | 14 |
+
+Todas as classes selecionadas apresentam complexidade ciclomática maior ou igual a 10.
+
+
+## Análise de Complexidade
+
+A complexidade ciclomática das classes candidatas foi medida utilizando o SonarQube.
+
+Classes selecionadas:
+
+- `CaixaService.java` — 34
+- `VendaService.java` — 29
+- `NotaFiscalItemService.java` — 24
+- `RecebimentoService.java` — 20
+- `CartaoLancamentoService.java` — 14
+
+Evidências:
+[docs/evidencias/complexidade](docs/evidencias/complexidade)
