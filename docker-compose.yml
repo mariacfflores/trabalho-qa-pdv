@@ -11,12 +11,13 @@ services:
         condition: service_healthy
 
     command:
-      - bash
-      - -c
-      - >
-        mvn package -DskipTests &&
-        java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005 -jar target/pdv-0.0.1-SNAPSHOT.war
-    
+    - bash
+    - -c
+    - >
+      mvn package -DskipTests &&
+      cp target/pdv-0.0.1-SNAPSHOT.war /tmp/pdv.war &&
+      java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005 -jar /tmp/pdv.war
+
   pdv-db:
     image: mysql:8.0
     environment:
