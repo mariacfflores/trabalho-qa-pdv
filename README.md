@@ -77,3 +77,67 @@ Classes selecionadas:
 
 Evidências:
 [docs/evidencias/complexidade](docs/evidencias/complexidade)
+
+# Testes Manuais
+
+Os testes manuais do sistema são documentados e executados utilizando o TestLink.
+
+Para executar a aplicação localmente, utilize:
+
+```sh
+docker compose up -d
+```
+
+A aplicação pode ser acessada em:
+
+```text
+http://localhost:8080
+```
+
+Credenciais padrão:
+
+- Usuário: `gerente`
+- Senha: `123`
+
+## Preparação da massa de teste
+
+Alguns casos de teste exigem dados previamente cadastrados no sistema.
+
+Para a execução do caso de teste `CT-CART-01 - Antecipar lançamento de cartão com sucesso`, foi necessário preparar a seguinte massa de teste:
+
+- banco aberto do tipo `BANCO`;
+- máquina de cartão associada ao banco;
+- título do tipo `Cartão Crédito`;
+- produto com estoque disponível;
+- venda realizada utilizando cartão de crédito;
+- lançamento de cartão com situação `A Processar`.
+
+## CT-CART-01 - Antecipar lançamento de cartão com sucesso
+
+O objetivo do teste é verificar se um lançamento de cartão com situação `A Processar` pode ser antecipado corretamente.
+
+Fluxo executado:
+
+1. acessar a área `Gerenciar Cartões`;
+2. localizar um lançamento com situação `A Processar`;
+3. selecionar a opção `Antecipar`;
+4. confirmar a antecipação;
+5. verificar a situação final do lançamento.
+
+Resultado obtido:
+
+```text
+A Processar -> Antecipado
+```
+
+O caso de teste foi executado com sucesso e registrado como **Passou** no TestLink.
+
+## Evidências
+
+As evidências relacionadas à execução dos testes manuais são armazenadas no diretório:
+
+```text
+docs/evidencias/
+```
+
+Durante a preparação da massa de teste, também foi identificado um comportamento anômalo no ajuste de estoque: embora o ajuste fosse apresentado pelo sistema como `Processado`, a quantidade disponível do produto permanecia igual a zero. Esse comportamento deve ser tratado separadamente como um possível defeito do sistema e não faz parte do escopo do `CT-CART-01`.
