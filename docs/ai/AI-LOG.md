@@ -210,7 +210,7 @@ O resultado da execução foi preservado como evidência do trabalho.
 
 **Responsável:** Maria Clara Flores
 
-**Atividade:** Planejamento, cadastro e execução de caso de teste manual relacionado à funcionalidade de cartões
+**Atividade:** Planejamento, cadastro, preparação da massa de teste e execução de caso de teste manual relacionado à funcionalidade de cartões
 
 **Ferramenta:** ChatGPT
 
@@ -229,6 +229,8 @@ A IA foi orientada a auxiliar na organização do caso de teste no formato neces
 - resultado esperado final.
 
 A definição da funcionalidade a ser testada e do comportamento que deveria ser validado foi realizada antes do cadastro no TestLink.
+
+Posteriormente, a IA também foi utilizada como apoio durante a preparação da massa de teste necessária para que as pré-condições do caso pudessem ser atendidas no ambiente local.
 
 ### Resultado
 
@@ -280,11 +282,58 @@ O caso foi associado:
 - ao Plano de Testes `Entrega 1 - PDV`;
 - à build `Entrega 1`.
 
+### Preparação da massa de teste
+
+Antes da execução do caso, foi necessário preparar o ambiente para atender às pré-condições definidas no TestLink.
+
+Inicialmente, a área `Gerenciar Cartões` não possuía lançamentos disponíveis e não existia nenhum registro com situação `APROCESSAR`.
+
+Durante a tentativa de gerar uma venda com cartão, também foi identificado que o campo `Título` do pagamento não apresentava nenhuma opção.
+
+A requisição realizada pela aplicação para o endpoint `/venda/titulos` foi verificada por meio da aba `Network` das ferramentas de desenvolvedor do navegador. A requisição retornava status `200 OK`, porém com resposta vazia (`[]`).
+
+A consulta ao banco confirmou que os tipos de título já existiam:
+
+- `DIN` — Dinheiro;
+- `CARTDEB` — Cartão Débito;
+- `CARTCRED` — Cartão Crédito.
+
+Entretanto, as tabelas de títulos e máquinas de cartão ainda não possuíam registros.
+
+Para preparar a massa de teste, foi realizado o seguinte fluxo pela aplicação:
+
+1. abertura de um banco do tipo `BANCO`;
+2. cadastro de uma máquina de cartão associada ao banco;
+3. cadastro do título `Cartão Crédito QA`, do tipo `Cartão Crédito`, associado à máquina criada;
+4. preparação de um produto com estoque disponível;
+5. criação de um pedido;
+6. geração da venda;
+7. pagamento da venda utilizando o título `Cartão Crédito QA`;
+8. geração de um lançamento de cartão com situação `A Processar`.
+
+Durante a preparação do estoque, foi identificado um comportamento anômalo no sistema: o ajuste era apresentado como `Processado` e indicava o novo estoque esperado, porém a quantidade armazenada na tabela `produto_estoque` permanecia igual a zero.
+
+Para permitir a continuidade da preparação da massa de teste, o estoque do produto utilizado foi ajustado diretamente no banco de dados.
+
+Após a conclusão desse fluxo, a tela `Gerenciar Cartões` passou a apresentar um lançamento de cartão do tipo crédito com situação `A Processar`, atendendo às pré-condições necessárias para a execução do `CT-CART-01`.
+
 ### Validação
 
-O teste foi executado manualmente no sistema seguindo os cinco passos cadastrados no TestLink.
+Com as pré-condições atendidas, o teste foi executado manualmente no sistema seguindo os cinco passos cadastrados no TestLink.
 
-Todos os passos apresentaram o comportamento esperado e foram registrados com o estado:
+Na área `Gerenciar Cartões`, foi localizado o lançamento criado durante a preparação da massa de teste com situação:
+
+`A Processar`
+
+Foi selecionada a opção `Antecipar` e a operação foi confirmada.
+
+Após a execução, o sistema alterou a situação do lançamento para:
+
+`Antecipado`
+
+Dessa forma, o comportamento observado correspondeu ao resultado esperado definido para o caso de teste.
+
+Todos os passos foram registrados no TestLink com o estado:
 
 `Passou`
 
@@ -306,3 +355,9 @@ A evidência está armazenada no repositório em:
 `docs/evidencias/TestLink_AntecLancCartao.pdf`
 
 O relatório contém o caso de teste, pré-condições, passos, resultados esperados, estado de cada passo, responsável pela execução e resultado final.
+
+### Observação adicional
+
+Durante a preparação da massa de teste, foi identificado um possível defeito na funcionalidade de ajuste de estoque, pois o sistema registrou o ajuste como `Processado`, mas não atualizou a quantidade disponível do produto na tabela `produto_estoque`.
+
+Esse comportamento foi identificado durante a preparação do ambiente e não faz parte do escopo do `CT-CART-01`, que tem como objetivo validar exclusivamente a antecipação de um lançamento de cartão.
