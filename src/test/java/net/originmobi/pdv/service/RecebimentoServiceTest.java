@@ -119,11 +119,16 @@ public class RecebimentoServiceTest {
 		
 		// Codigo da pessoa
 		when(caio.getCodigo()).thenReturn(10L);
-		
+		when(parcela1.getCodigo()).thenReturn(1L);
+
 		// Chamar abrirRecebimento e esperar excecao
-		assertThrows(RuntimeException.class, () -> {
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
 			recebimentoService.abrirRecebimento(20L, new String[] {"1"});
 		});
+
+		assertEquals("A parcela 1 não pertence ao cliente selecionado", exception.getMessage());
+
+		verify(recebimentos, never()).save(any());
 	}
 	@Test
 	void deveRecusarClienteInexistente() {
@@ -145,11 +150,15 @@ public class RecebimentoServiceTest {
 		
 		// Quando o service procurar o cliente, não encontra a pessoa
 		when(pessoas.buscaPessoa(10L)).thenReturn(Optional.empty());
-		
+
 		// Chamar abrirrecebimento e esperar excecao
-		assertThrows(RuntimeException.class, () -> {
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
 			recebimentoService.abrirRecebimento(10L, new String[] {"1"});
 		});
+
+		assertEquals("Cliente não encontrado", exception.getMessage());
+
+		verify(recebimentos, never()).save(any());
 	}
 	@Test
 	void deveCalcularValorTotalDasParcelas() {
@@ -180,6 +189,33 @@ public class RecebimentoServiceTest {
 	    });
 
 	    recebimentoService.abrirRecebimento(10L, new String[] { "1", "2" });
+
+	    ArgumentCaptor<Recebimento> captor = ArgumentCaptor.forClass(Recebimento.class);
+	    verify(recebimentos).save(captor.capture());
+
+	    assertEquals(110.0, captor.getValue().getValor_total());
+	}
+
+	@Test
+	void deveCriarRecebimentoComArrayDeParcelasVazio() {
+		Pessoa caio = mock(Pessoa.class);
+
+		when(pessoas.buscaPessoa(10L)).thenReturn(Optional.of(caio));
+
+		when(recebimentos.save(any(Recebimento.class))).thenAnswer(invocacao -> {
+			Recebimento recebimento = invocacao.getArgument(0);
+			recebimento.setCodigo(100L);
+			return recebimento;
+		});
+
+		String resultado = recebimentoService.abrirRecebimento(10L, new String[] {});
+
+		assertEquals("100", resultado);
+
+		ArgumentCaptor<Recebimento> captor = ArgumentCaptor.forClass(Recebimento.class);
+		verify(recebimentos).save(captor.capture());
+
+		assertEquals(0.0, captor.getValue().getValor_total());
 	}
 
 }
