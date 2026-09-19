@@ -23,4 +23,7 @@
 hs_err_pid*
 
 # Maven build output
-target/.DS_Store
+target/
+
+# macOS
+.DS_Store
