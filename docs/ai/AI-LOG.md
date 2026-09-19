@@ -361,3 +361,58 @@ O relatório contém o caso de teste, pré-condições, passos, resultados esper
 Durante a preparação da massa de teste, foi identificado um possível defeito na funcionalidade de ajuste de estoque, pois o sistema registrou o ajuste como `Processado`, mas não atualizou a quantidade disponível do produto na tabela `produto_estoque`.
 
 Esse comportamento foi identificado durante a preparação do ambiente e não faz parte do escopo do `CT-CART-01`, que tem como objetivo validar exclusivamente a antecipação de um lançamento de cartão.
+
+---
+
+## Registro 4 — Revisão e correção dos testes unitários da `RecebimentoService`
+
+**Responsável:** Caio de Souza Lima
+
+**Atividade:** Revisão, correção e conserto do ambiente de execução dos testes unitários do método `abrirRecebimento` da classe `RecebimentoService`
+
+**Ferramenta:** Claude (Anthropic)
+
+### Prompt/instrução
+
+Os cenários de teste do método `abrirRecebimento` (caminho feliz, parcela já quitada, parcela de outro cliente, cliente inexistente e cálculo do valor total) haviam sido escritos manualmente antes da sessão. Foi solicitado à IA que revisasse o código já escrito, apontando erros de compilação, más práticas com Mockito e lacunas de cobertura, e que ajudasse a diagnosticar por que os testes não executavam no Eclipse.
+
+### Resultado
+
+A IA identificou uma série de problemas em cadeia:
+
+- imports estáticos conflitantes (`org.junit.Assert.assertEquals` e `org.junit.jupiter.api.Assertions.assertEquals` ao mesmo tempo), impedindo a compilação;
+- incompatibilidade de versões no `pom.xml`: o `spring-boot-starter-parent 2.0.2.RELEASE` fixava versões antigas de `junit-jupiter-api` (5.1.1), `mockito-core` (2.15.0) e `byte-buddy` (1.7.11) que não eram compatíveis entre si nem com Java 17, causando `NoSuchMethodError` em cadeia;
+- o `maven-surefire-plugin` herdado do parent (2.21.0) não sabia executar testes JUnit 5;
+- stubs desnecessários (`UnnecessaryStubbingException`) em métodos mockados cujo retorno não era usado no cenário testado;
+- no teste `deveCalcularValorTotalDasParcelas`, a chamada ao método de produção era feita sem nenhuma asserção sobre o valor calculado, não provando de fato o comportamento pretendido;
+- os testes `deveRecusarParcelaDeOutroCliente` e `deveRecusarClienteInexistente` verificavam apenas o tipo da exceção lançada (`RuntimeException`), sem checar a mensagem nem confirmar que `recebimentos.save(...)` não havia sido chamado — o que poderia mascarar um `NullPointerException` como se fosse a validação de negócio esperada;
+- ausência de um cenário cobrindo o array de parcelas vazio.
+
+### Decisão
+
+Foram aceitas e aplicadas as correções de ambiente (`pom.xml`: fixação explícita de `maven-surefire-plugin` 2.22.2, `junit-jupiter-api/params/engine` 5.8.2, `mockito-core`/`mockito-junit-jupiter` 3.12.4 e `byte-buddy`/`byte-buddy-agent` 1.11.13) e a remoção do import duplicado, por serem correções técnicas objetivas de compatibilidade, sem impacto na lógica dos testes.
+
+Quanto ao conteúdo dos testes, foram aceitas as sugestões de reforço:
+
+- adição de `assertEquals` sobre a mensagem da exceção e `verify(recebimentos, never()).save(any())` em `deveRecusarParcelaDeOutroCliente` e `deveRecusarClienteInexistente`;
+- adição de `ArgumentCaptor<Recebimento>` em `deveCalcularValorTotalDasParcelas` para verificar `getValor_total() == 110.0`, já que o método não retorna esse valor diretamente;
+- criação do teste `deveCriarRecebimentoComArrayDeParcelasVazio`, documentando o comportamento real do sistema (cria um recebimento com valor total `0.0` sem lançar exceção).
+
+A sugestão de remover a duplicidade entre `deveCriarRecebimentoComParcelasValidas` e `deveCalcularValorTotalDasParcelas` (por testarem o mesmo caminho de código) foi discutida, mas optou-se por manter os dois testes separados nesta entrega, por já estarem implementados e cobrindo focos de asserção diferentes.
+
+### Validação
+
+Após as correções, a suíte foi executada via terminal com Maven (`mvn test -Dtest=RecebimentoServiceTest`), fora do Eclipse, para eliminar variáveis de configuração da IDE:
+
+```text
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Cada correção sugerida pela IA foi conferida manualmente contra o código-fonte de `RecebimentoService.java` antes de ser aceita — por exemplo, a mensagem de exceção `"A parcela " + parcela.getCodigo() + " não pertence ao cliente selecionado"` foi conferida linha a linha antes de ser usada na asserção do teste `deveRecusarParcelaDeOutroCliente`.
+
+A versão final está implementada em:
+
+`src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java`
+
+---
