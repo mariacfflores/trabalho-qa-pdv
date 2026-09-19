@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/><title>testreport Recebimento</title>
+<link type="text/css" rel="stylesheet" href="http://vania.ic.uff.br/testlink/gui/themes/default/css/tl_documents.css" />
+<style type="text/css" media="print">.notprintable { display:none;}</style>
+</head>
+<body>
+<div>
+<div style="float:right;">TestLink Community [configure $tlCfg-&gt;document_generator-&gt;company_name]</div>
+<div>&nbsp;</div><hr />
+<p style="text-align: center;"><img alt="TestLink logo" title="configure using $tlCfg->document_generator->company_logo"  width= height= src="http://vania.ic.uff.br/testlink/gui/themes/default/images/tl-logo-transparent-25.png" /></p></div>
+<div class="doc_title"><p>Relatório da Execução do Plano de Testes</p></div>
+<div class="doc_title" style="text-align:left;margin: auto;"><p>Projecto de Teste: PDV - QA<br/>Plano de Testes: Entrega 1 - PDV<br/>Suite de Testes: Recebimento</p></div>
+<div class="summary"><p id="printedby">Impresso por TestLink em 19/09/2026</p></div>
+<div class="pagefooter" id="copyright">2012 &copy; TestLink Community</div>
+<h1 class="doclevel" >Projecto de Teste: PDV - QA</h1>
+<div class="txtlevel"><p>Projeto de teste para o trabalho de QA utilizando o sistema PDV.</p></div>
+ <br/><h1 class="doclevel" style="page-break-before: avoid;"  >Plano de Testes: Entrega 1 - PDV</h1>
+<div class="txtlevel"><p>Plano de testes manuais referente &agrave; Entrega 1 do trabalho de Qualidade e Teste,&nbsp;<br />
+cobrindo alguns&nbsp;cen&aacute;rios funcionais do sistema PDV atribu&iacute;dos a cada integrante do grupo.</p></div>
+ <br/><h1 class='doclevel'>Suite de Testes : Recebimento</h1>
+<p>&nbsp;</p><div> <table class="tc" width="90%" ><tr><th colspan="5">Caso de Teste PDVQA-1: Realizar recebimento de título com desconto&nbsp;<span style="font-size: 80%;">[Versão : 1]</span></th></tr>
+<tr><td colspan="5"><span class="label">Objetivo do Teste::</span><br /><p>Verificar se o sistema permite ao usu&aacute;rio registrar o recebimento de um t&iacute;tulo em aberto,<br />
+aplicando um valor de desconto, e confirma a opera&ccedil;&atilde;o com sucesso.</p>
+</td></tr><tr><td><span class="label">#:</span></td><td><span class="label">Ações do Passo:</span></td><td><span class="label">Resultados Esperados::</span></td><td><span class="label">Estado da Execução:</span></td></tr><tr><td width="5">1</td><td><p>Acessar menu Pedidos e clicar em Novo Pedido, selecionando o cliente</p>
+</td><td><p>Tela de pedido &eacute; aberta com o cliente selecionado</p>
+</td><td>Passou</td></tr><tr><td width="5">2</td><td><p>Inserir um produto no pedido</p>
+</td><td><p>Produto adicionado &agrave; lista, valor total do pedido atualizado</p>
+
+<p>&nbsp;</p>
+</td><td>Passou</td></tr><tr><td width="5">3</td><td><p>Clicar em &quot;Gerar Venda&quot;</p>
+</td><td><p>Modal de Pagamento &eacute; exibido com o valor total</p>
+
+<p>&nbsp;</p>
+</td><td>Passou</td></tr><tr><td width="5">4</td><td><p>Selecionar uma Forma de Pagamento e tentar selecionar o campo &quot;Titulo&quot;</p>
+</td><td><p>Dropdown &quot;Titulo&quot; &eacute; preenchido com as op&ccedil;&otilde;es cadastradas (Dinheiro, Cart&atilde;o D&eacute;bito, Cart&atilde;o Cr&eacute;dito)</p>
+</td><td>Falhado</td></tr><tr><td width="5">5</td><td><p>Clicar em &quot;Pagar&quot;</p>
+</td><td><p>Sistema processa o pagamento e gera o t&iacute;tulo/recebimento com sucesso</p>
+
+<p>&nbsp;</p>
+</td><td>Falhado</td></tr><tr><td width="20%" valign="top"><span class="label"><br />Tipo de Execução:</span></td><td colspan="4">Manual</td></tr>
+<tr><td width="20%" valign="top"><span class="label">Estimativa da duração da Execução (min):</span></td><td colspan="4"></td></tr>
+<tr><td width="20%" valign="top"><span class="label">Prioridade:</span></td><td colspan="4">Média</td></tr>
+<tr><td colspan="5"></td></tr><tr style="font-weight: bold;background: #EEE;text-align: left;"><td width="20%" valign="top">Detalhes da Execução</td><td colspan="4">&nbsp;</td></tr>
+<tr><td width="20%" valign="top">Build</td><td colspan="4">Build 1 - Entrega 1</td></tr>
+<tr><td width="20%" valign="top">Testador</td><td  colspan="4" >admin3</td></tr>
+<tr><td width="20%" valign="top"><span class="label">Resultado da Execução:</span></td><td  colspan="4" ><b>Falhado</b></td></tr>
+<tr><td width="20%"><span class="label">Modo de Execução:</span></td><td  colspan="4" ><b>Manual</b></td></tr>
+<tr><td width="20%"><span class="label">Estimativa da duração (min):</span></td><td  colspan="4" ><b>60.00</b></td></tr>
+<tr><td width="20%" valign="top">Comentários</td><td  colspan="4" >Execução do cenário "Realizar recebimento de título com desconto". <br />
+Passos 1-3 (criação do pedido e abertura do modal de pagamento) funcionaram corretamente. <br />
+Passos 4-5 falharam: o dropdown "Titulo" não é preenchido com opções após selecionar a Forma <br />
+de Pagamento, impedindo o fechamento da venda a prazo. Ao tentar pagar mesmo assim, o sistema <br />
+retorna erro não tratado "Zero length string".</td></tr>
+</table>
+</div>
+
+</body>
+</html>
