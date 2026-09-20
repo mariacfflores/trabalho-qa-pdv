@@ -197,7 +197,7 @@ Para executar:
 mvn test -Dtest=RecebimentoServiceTest
 ```
 
-## Testes Manuais — PDVQA-1 (Recebimento de Título)
+## Testes Manuais — PDV (Recebimento de Título)
 
 Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
 
