@@ -141,3 +141,39 @@ docs/evidencias/
 ```
 
 Durante a preparação da massa de teste, também foi identificado um comportamento anômalo no ajuste de estoque: embora o ajuste fosse apresentado pelo sistema como `Processado`, a quantidade disponível do produto permanecia igual a zero. Esse comportamento deve ser tratado separadamente como um possível defeito do sistema e não faz parte do escopo do `CT-CART-01`.
+
+# Classe UsuarioService
+
+Esta seção reúne os artefatos de teste produzidos pelo integrante Paulo, referentes à funcionalidade de cadastro e gerenciamento de usuários (`UsuarioService`).
+
+## Plano de Teste
+
+[Arquivo Google Docs](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
+
+## Testes Unitários
+
+Testes da classe `UsuarioService`, casos CT01–CT05, cobrindo cadastro de usuário novo, atualização, listagem, adição de grupo e busca por username:
+
+[`src/test/java/net/originmobi/pdv/service/UsuarioServiceTest.java`](src/test/java/net/originmobi/pdv/service/UsuarioServiceTest.java)
+
+Para executar:
+
+```sh
+mvn test -DforkCount=0 -Dtest=UsuarioServiceTest
+```
+
+## Testes Manuais — CT-USU-01 a CT-USU-03 (Cadastro de Usuário)
+
+Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de sucesso e as duas validações de duplicidade implementadas em `UsuarioService.cadastrar()`.
+
+| ID | Cenário | Resultado |
+|---|---|---|
+| CT-USU-01 | Cadastro de usuário com sucesso | Passou |
+| CT-USU-02 | Cadastro com `user` já existente | Passou |
+| CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou |
+
+Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
+
+## Uso de Inteligência Artificial
+
+As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
