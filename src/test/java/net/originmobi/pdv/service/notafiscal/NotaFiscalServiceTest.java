@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +50,30 @@ public class NotaFiscalServiceTest {
 
 		assertEquals(0, resultado.size());
 		verify(notasFiscais).findAll();
+	}
+
+	@Test
+	void deveBuscarNotaFiscalPorCodigo() {
+		NotaFiscal nota = new NotaFiscal();
+		nota.setCodigo(1L);
+
+		when(notasFiscais.findById(1L)).thenReturn(Optional.of(nota));
+
+		Optional<NotaFiscal> resultado = notaFiscalService.busca(1L);
+
+		assertEquals(true, resultado.isPresent());
+		assertEquals(1L, resultado.get().getCodigo());
+		verify(notasFiscais).findById(1L);
+	}
+
+	@Test
+	void deveRetornarVazioQuandoNotaFiscalNaoExistir() {
+		when(notasFiscais.findById(1L)).thenReturn(Optional.empty());
+
+		Optional<NotaFiscal> resultado = notaFiscalService.busca(1L);
+
+		assertEquals(false, resultado.isPresent());
+		verify(notasFiscais).findById(1L);
 	}
 
 }
