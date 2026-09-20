@@ -1,6 +1,9 @@
 package net.originmobi.pdv.service.notafiscal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,14 +18,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import net.originmobi.pdv.enumerado.notafiscal.NotaFiscalTipo;
+import net.originmobi.pdv.model.Empresa;
+import net.originmobi.pdv.model.EmpresaParametro;
 import net.originmobi.pdv.model.NotaFiscal;
+import net.originmobi.pdv.model.NotaFiscalTotais;
+import net.originmobi.pdv.model.Pessoa;
 import net.originmobi.pdv.repository.notafiscal.NotaFiscalRepository;
+import net.originmobi.pdv.service.EmpresaService;
+import net.originmobi.pdv.service.PessoaService;
 
 @ExtendWith(MockitoExtension.class)
 public class NotaFiscalServiceTest {
 
 	@Mock
 	private NotaFiscalRepository notasFiscais;
+
+	@Mock
+	private EmpresaService empresas;
+
+	@Mock
+	private NotaFiscalTotaisServer notaTotais;
+
+	@Mock
+	private PessoaService pessoas;
 
 	@InjectMocks
 	private NotaFiscalService notaFiscalService;
@@ -105,6 +124,56 @@ public class NotaFiscalServiceTest {
 		Integer resultado = notaFiscalService.geraDV(null);
 
 		assertEquals(0, resultado);
+	}
+
+	@Test
+	void deveLancarErroQuandoNaoExistirEmpresaCadastrada() {
+		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.empty());
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
+		});
+
+		assertEquals("Nenhuma empresa cadastrada, verifique", exception.getMessage());
+		verify(notaTotais, never()).cadastro(any(NotaFiscalTotais.class));
+		verify(notasFiscais, never()).save(any(NotaFiscal.class));
+	}
+
+	@Test
+	void deveLancarErroQuandoNaoExistirDestinatario() {
+		Empresa empresa = new Empresa();
+		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.of(empresa));
+		when(pessoas.buscaPessoa(1L)).thenReturn(Optional.empty());
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
+		});
+
+		assertEquals("Favor, selecione o destinatário", exception.getMessage());
+		verify(notaTotais, never()).cadastro(any(NotaFiscalTotais.class));
+		verify(notasFiscais, never()).save(any(NotaFiscal.class));
+	}
+
+	@Test
+	void deveLancarErroQuandoSerieNfeForZero() {
+		EmpresaParametro parametro = new EmpresaParametro();
+		parametro.setSerie_nfe(0);
+
+		Empresa empresa = new Empresa();
+		empresa.setParametro(parametro);
+
+		Pessoa pessoa = new Pessoa();
+
+		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.of(empresa));
+		when(pessoas.buscaPessoa(1L)).thenReturn(Optional.of(pessoa));
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
+		});
+
+		assertEquals("Não existe série cadastrada para o modelo 55, verifique", exception.getMessage());
+		verify(notaTotais, never()).cadastro(any(NotaFiscalTotais.class));
+		verify(notasFiscais, never()).save(any(NotaFiscal.class));
 	}
 
 }
