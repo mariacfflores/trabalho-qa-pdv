@@ -416,3 +416,38 @@ A versão final está implementada em:
 `src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java`
 
 ---
+
+## Testes unitários da UsuarioService
+
+- **Atividade:** Projetar casos de testes unitários (classe `UsuarioService`)
+- **Ferramenta:** Claude (Anthropic)
+- **Prompt/instrução:** Os 5 testes unitários (`UsuarioServiceTest`, casos CT01–CT05, cobrindo `cadastrar` novo, `cadastrar` atualização, `lista`, `addGrupo` e `buscaUsuario`) foram feitos pelo integrante. A IA foi usada apenas como auxílio e para revisar o resultado após a primeira execução, que apresentou uma falha.
+- **Resultado:** Na primeira execução (`mvn -Dtest=UsuarioServiceTest test`), o caso CT01 (`deveCadastrarUsuarioComSucesso`) falhou: esperava "Usuário salvo com sucesso" mas obteve "Usuário atualizado com sucesso". A IA ajudou a diagnosticar a causa: o método `getCodigo()` do mock `Usuario` não havia sido estubado, e o Mockito retorna `0L` (não `null`) por padrão para tipos numéricos encaixotados (`Long`), diferente do que ocorre com `String` ou objetos. Como `UsuarioService.cadastrar()` decide o fluxo com `usuario.getCodigo() == null`, o teste caiu no caminho de atualização em vez do de novo cadastro.
+- **Decisão:** Corrigida a estubagem, adicionando `when(usuario.getCodigo()).thenReturn(null);` ao caso CT01, para representar explicitamente um usuário novo (sem código). Nenhuma outra alteração foi feita nos testes.
+- **Validação:** Reexecutado `mvn -Dtest=UsuarioServiceTest test` após a correção — os 5 testes passaram (`Tests run: 5, Failures: 0, Errors: 0`).
+
+## Achados de inspeção de código (leitura de UsuarioService)
+
+- **Atividade:** Identificação preliminar de problemas de qualidade
+- **Ferramenta:** Claude (Anthropic)
+- **Prompt/instrução:** Pedido de leitura crítica do código de `UsuarioService` em busca de problemas.
+- **Resultado:** A IA apontou 3 problemas potenciais só pela leitura do código:
+  1. Re-criptografia (BCrypt) da senha em toda atualização de usuário, mesmo quando a senha não é alterada.
+  2. Comparação de `Long` com `==` (em vez de `.equals()`) em `removeGrupo`.
+  3. A classe `GrupoUsuario` não sobrescreve `equals()`/`hashCode()`, afetando o `contains()` usado em `addGrupo`.
+- **Decisão:** Achados registrados para inclusão no relatório de inspeção/qualidade da Entrega 2, não impactam os testes elaborados.
+- **Validação:** Ainda não validado com testes específicos; fica como ponto de atenção para a etapa estrutural/de defeitos.
+
+## Casos de teste manuais (funcionalidade "Cadastro de Usuário")
+
+- **Atividade:** Projetar e executar casos de teste manuais (funcionalidade individual)
+- **Ferramenta:** Claude (Anthropic)
+- **Prompt/instrução:** Solicitado apoio para desenhar casos de teste manuais para a funcionalidade de cadastro de usuário, com base nos caminhos de decisão do método `cadastrar()`, e para depurar erros encontrados durante a execução no ambiente local (Docker).
+- **Resultado:** Foram desenhados 3 casos de teste manuais:
+  - **CT-USU-01** — Cadastro de usuário com sucesso
+  - **CT-USU-02** — Cadastro com "user" já existente
+  - **CT-USU-03** — Cadastro de pessoa já vinculada a outro usuário
+
+  Durante a execução do CT-USU-01, foi encontrado um erro 500 real no cadastro de **pessoa** (pré-requisito do teste). Com apoio da IA, a causa raiz foi investigada (inspeção de logs do Docker, DevTools do navegador e leitura de `PessoaService.java`) e identificada: o campo "Número" do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando truncamento de dados; o erro real fica mascarado porque `PessoaService.cadastrar()` captura a exceção genericamente e retorna sempre a mesma mensagem ("chame o suporte"), sem repassar a causa.
+- **Decisão:** Os 3 casos de teste foram executados manualmente após contornar o bug (preenchendo o campo "Número" com até 6 caracteres). Uma alteração temporária de depuração (`e.printStackTrace()`) foi adicionada a `PessoaService.java` para expor a exceção real durante a investigação. O bug do campo "Número" foi registrado como issue no GitHub (ver README).
+- **Validação:** Os 3 casos de teste foram executados na aplicação rodando localmente via Docker Compose (`http://localhost:8080`), com os seguintes resultados: CT-USU-01 (Passou), CT-USU-02 (Passou), CT-USU-03 (Passou). Evidências: mensagens de retorno da aplicação conferidas na tela após cada execução.
