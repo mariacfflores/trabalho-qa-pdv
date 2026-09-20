@@ -1,7 +1,9 @@
 # pdv
-Sistema de ERP web desenvolvido em Java com Spring Framework 
+
+Sistema de ERP web desenvolvido em Java com Spring Framework
 
 # Recursos
+
 - Cadastro produtos/clientes/fornecedor
 - Controle de estoque
 - Gerenciar comandas
@@ -14,13 +16,16 @@ Sistema de ERP web desenvolvido em Java com Spring Framework
 - Relatórios
 
 # Instalação
+
 Para instalar o sistema, você deve criar o banco de dado "pdv" no mysql e configurar o arquivo application.properties
 com os dados do seu usuário root do mysql e rodar o projeto pelo Eclipse ou gerar o jar do mesmo e execultar.
 
 # Logando no sistema
+
 Para logar no sistema, use o usuário "gerente" e a senha "123".
 
 # Tecnologias utilizadas
+
 - Spring Framework 5
 - Thymeleaf 3
 - MySQL
@@ -28,7 +33,9 @@ Para logar no sistema, use o usuário "gerente" e a senha "123".
 - FlyWay
 
 # Execução com Docker
+
 Para executar a aplicação utilizando o docker, utilize o seguinte comando na raiz do projeto:
+
 ```sh
 docker compose up -d
 ```
@@ -47,21 +54,18 @@ foram realizados ajustes de configuração nos arquivos `Dockerfile` e
 `docker-compose.yml`. As alterações realizadas podem ser consultadas no
 histórico de commits deste repositório.
 
-
 # Evidências de Complexidade Ciclomática
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
 
-| Classe | Complexidade ciclomática |
-|---|---:|
-| CaixaService.java | 34 |
-| VendaService.java | 29 |
-| NotaFiscalItemService.java | 24 |
-| RecebimentoService.java | 20 |
-| CartaoLancamentoService.java | 14 |
+| Classe                       | Complexidade ciclomática |
+| ---------------------------- | -----------------------: |
+| RecebimentoService.java      |                       20 |
+| NotaFiscalService.java       |                       16 |
+| CartaoLancamentoService.java |                       14 |
+| UsuarioService.java          |                       11 |
 
 Todas as classes selecionadas apresentam complexidade ciclomática maior ou igual a 10.
-
 
 ## Análise de Complexidade
 
@@ -69,11 +73,10 @@ A complexidade ciclomática das classes candidatas foi medida utilizando o Sonar
 
 Classes selecionadas:
 
-- `CaixaService.java` — 34
-- `VendaService.java` — 29
-- `NotaFiscalItemService.java` — 24
 - `RecebimentoService.java` — 20
+- `NotaFiscalService.java` — 16
 - `CartaoLancamentoService.java` — 14
+- `UsuarioService.java` — 11
 
 Evidências:
 [docs/evidencias/complexidade](docs/evidencias/complexidade)
@@ -166,11 +169,11 @@ mvn test -DforkCount=0 -Dtest=UsuarioServiceTest
 
 Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de sucesso e as duas validações de duplicidade implementadas em `UsuarioService.cadastrar()`.
 
-| ID | Cenário | Resultado |
-|---|---|---|
-| CT-USU-01 | Cadastro de usuário com sucesso | Passou |
-| CT-USU-02 | Cadastro com `user` já existente | Passou |
-| CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou |
+| ID        | Cenário                                         | Resultado |
+| --------- | ----------------------------------------------- | --------- |
+| CT-USU-01 | Cadastro de usuário com sucesso                 | Passou    |
+| CT-USU-02 | Cadastro com `user` já existente                | Passou    |
+| CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou    |
 
 Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
 

@@ -417,7 +417,7 @@ A versão final está implementada em:
 
 ---
 
-## Testes unitários da UsuarioService
+## Registro 5 - Testes unitários da UsuarioService
 
 - **Atividade:** Projetar casos de testes unitários (classe `UsuarioService`)
 - **Ferramenta:** Claude (Anthropic)
@@ -426,7 +426,7 @@ A versão final está implementada em:
 - **Decisão:** Corrigida a estubagem, adicionando `when(usuario.getCodigo()).thenReturn(null);` ao caso CT01, para representar explicitamente um usuário novo (sem código). Nenhuma outra alteração foi feita nos testes.
 - **Validação:** Reexecutado `mvn -Dtest=UsuarioServiceTest test` após a correção — os 5 testes passaram (`Tests run: 5, Failures: 0, Errors: 0`).
 
-## Achados de inspeção de código (leitura de UsuarioService)
+## Registro 6 - Achados de inspeção de código (leitura de UsuarioService)
 
 - **Atividade:** Identificação preliminar de problemas de qualidade
 - **Ferramenta:** Claude (Anthropic)
@@ -438,7 +438,7 @@ A versão final está implementada em:
 - **Decisão:** Achados registrados para inclusão no relatório de inspeção/qualidade da Entrega 2, não impactam os testes elaborados.
 - **Validação:** Ainda não validado com testes específicos; fica como ponto de atenção para a etapa estrutural/de defeitos.
 
-## Casos de teste manuais (funcionalidade "Cadastro de Usuário")
+## Registro 7 - Casos de teste manuais (funcionalidade "Cadastro de Usuário")
 
 - **Atividade:** Projetar e executar casos de teste manuais (funcionalidade individual)
 - **Ferramenta:** Claude (Anthropic)
@@ -449,5 +449,18 @@ A versão final está implementada em:
   - **CT-USU-03** — Cadastro de pessoa já vinculada a outro usuário
 
   Durante a execução do CT-USU-01, foi encontrado um erro 500 real no cadastro de **pessoa** (pré-requisito do teste). Com apoio da IA, a causa raiz foi investigada (inspeção de logs do Docker, DevTools do navegador e leitura de `PessoaService.java`) e identificada: o campo "Número" do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando truncamento de dados; o erro real fica mascarado porque `PessoaService.cadastrar()` captura a exceção genericamente e retorna sempre a mesma mensagem ("chame o suporte"), sem repassar a causa.
+
 - **Decisão:** Os 3 casos de teste foram executados manualmente após contornar o bug (preenchendo o campo "Número" com até 6 caracteres). Uma alteração temporária de depuração (`e.printStackTrace()`) foi adicionada a `PessoaService.java` para expor a exceção real durante a investigação. O bug do campo "Número" foi registrado como issue no GitHub (ver README).
 - **Validação:** Os 3 casos de teste foram executados na aplicação rodando localmente via Docker Compose (`http://localhost:8080`), com os seguintes resultados: CT-USU-01 (Passou), CT-USU-02 (Passou), CT-USU-03 (Passou). Evidências: mensagens de retorno da aplicação conferidas na tela após cada execução.
+
+---
+
+## Registro 8 — Revisar os testes e explorar outros métodos de `NotaFiscalServiceTest.java`
+
+- **Responsável:** Rafael Valverde Teixeira
+- **Atividade:** Revisar os testes implementados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) e identificar de forma outros possíveis métodos de serem testados de forma unitária e simples.
+- **Ferramenta:** ChatGPT 5.5 potência média
+- **Prompt/instrução** Analise os testes unitários realizados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) de NotaFiscalService.java em NotaFiscalServiceTest.java e proponha outros métodos da classe que também podem ser testados e diga qual é o nível de complexidade dos testes.
+- **Resultado** Não foram identificados problemas nos testes já implementados e foram identificados os métodos cadastrar(...) tendo complexidade simples e os métodos como salvaXML, removeXML e emitir com complexidade mais alta.
+- **Decisão** Implementar, com a ajuda da IA, os testes no método cadastrar com complexidade simples e deixar as classes com complexidade maior para eventuais partes futuras do trabalho.
+- **Validação** Os testes rodaram sem problemas na IDE Eclipse `Run: 11/11, Errors: 0, Failures: 0`

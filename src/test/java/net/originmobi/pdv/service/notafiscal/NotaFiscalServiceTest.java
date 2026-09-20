@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,6 +47,7 @@ public class NotaFiscalServiceTest {
 	@InjectMocks
 	private NotaFiscalService notaFiscalService;
 
+	@DisplayName("Teste que o método deve listar notas fiscais")
 	@Test
 	void deveListarNotasFiscais() {
 		NotaFiscal nota1 = new NotaFiscal();
@@ -61,6 +63,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).findAll();
 	}
 
+	@DisplayName("Teste que tem que retornar lista vazia quando não existirem notas fiscais")
 	@Test
 	void deveRetornarListaVaziaQuandoNaoExistiremNotasFiscais() {
 		when(notasFiscais.findAll()).thenReturn(Collections.emptyList());
@@ -71,6 +74,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).findAll();
 	}
 
+	@DisplayName("Teste de buscar nota fiscal por código")
 	@Test
 	void deveBuscarNotaFiscalPorCodigo() {
 		NotaFiscal nota = new NotaFiscal();
@@ -85,6 +89,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).findById(1L);
 	}
 
+	@DisplayName("Teste de retornar vazio quando a nota fiscal não existir")
 	@Test
 	void deveRetornarVazioQuandoNotaFiscalNaoExistir() {
 		when(notasFiscais.findById(1L)).thenReturn(Optional.empty());
@@ -95,6 +100,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).findById(1L);
 	}
 
+	@DisplayName("Teste de retornar total de notas fiscais emitidas")
 	@Test
 	void deveRetornarTotalDeNotasFiscaisEmitidas() {
 		when(notasFiscais.totalNotaFiscalEmitidas()).thenReturn(5);
@@ -105,13 +111,15 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).totalNotaFiscalEmitidas();
 	}
 
+	@DisplayName("Teste que deve gerar dígito verificador")
 	@Test
 	void deveGerarDigitoVerificador() {
 		Integer resultado = notaFiscalService.geraDV("12345");
 
 		assertEquals(5, resultado);
 	}
-
+	
+	@DisplayName("Teste que tem que retornar zero quando o resto for zero ou um")
 	@Test
 	void deveRetornarZeroQuandoRestoForZeroOuUm() {
 		Integer resultado = notaFiscalService.geraDV("123456");
@@ -119,6 +127,7 @@ public class NotaFiscalServiceTest {
 		assertEquals(0, resultado);
 	}
 
+	@DisplayName("Teste de retornar zero quando o código for inválido")
 	@Test
 	void deveRetornarZeroQuandoCodigoForInvalido() {
 		Integer resultado = notaFiscalService.geraDV(null);
@@ -126,6 +135,7 @@ public class NotaFiscalServiceTest {
 		assertEquals(0, resultado);
 	}
 
+	@DisplayName("Teste que deve lançar erro quando não existir empresa cadastrada")
 	@Test
 	void deveLancarErroQuandoNaoExistirEmpresaCadastrada() {
 		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.empty());
@@ -139,6 +149,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais, never()).save(any(NotaFiscal.class));
 	}
 
+	@DisplayName("Teste que deve lançar erro quando não existir destinatário")
 	@Test
 	void deveLancarErroQuandoNaoExistirDestinatario() {
 		Empresa empresa = new Empresa();
@@ -154,6 +165,7 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais, never()).save(any(NotaFiscal.class));
 	}
 
+	@DisplayName("Teste de lançar erro quando a série da NFe for zero")
 	@Test
 	void deveLancarErroQuandoSerieNfeForZero() {
 		EmpresaParametro parametro = new EmpresaParametro();
