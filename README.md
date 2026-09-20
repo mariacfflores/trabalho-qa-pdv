@@ -177,6 +177,38 @@ Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de su
 
 Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
 
+# Classe RecebimentoService
+
+Esta seção reúne os artefatos de teste produzidos pelo integrante Caio, referentes à funcionalidade de recebimento de títulos (`RecebimentoService`).
+
+## Plano de Teste
+
+[Arquivo Google Docs](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=sharing)
+
+## Testes Unitários
+
+Testes do método `abrirRecebimento` da classe `RecebimentoService`, cobrindo o caminho feliz, validações de negócio (parcela quitada, parcela de outro cliente, cliente inexistente), cálculo do valor total e array de parcelas vazio:
+
+[`src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java`](src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java)
+
+Para executar:
+
+```sh
+mvn test -Dtest=RecebimentoServiceTest
+```
+
+## Testes Manuais — PDVQA-1 (Recebimento de Título)
+
+Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
+
+| ID       | Cenário                                              | Resultado |
+| -------- | ----------------------------------------------------- | --------- |
+| PDVQA-1  | Realizar recebimento de título com desconto           | Falhado   |
+
+Durante a execução, foi identificado um defeito na tela de pagamento da venda: o campo "Titulo" não é preenchido com nenhuma opção após a seleção da Forma de Pagamento, impedindo a conclusão do pagamento e gerando um erro não tratado ("Zero length string"). Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/9).
+
+Evidência da execução: [`docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf`](docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf)
+
 ## Uso de Inteligência Artificial
 
 As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
