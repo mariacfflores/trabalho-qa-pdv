@@ -76,4 +76,35 @@ public class NotaFiscalServiceTest {
 		verify(notasFiscais).findById(1L);
 	}
 
+	@Test
+	void deveRetornarTotalDeNotasFiscaisEmitidas() {
+		when(notasFiscais.totalNotaFiscalEmitidas()).thenReturn(5);
+
+		int resultado = notaFiscalService.totalNotaFiscalEmitidas();
+
+		assertEquals(5, resultado);
+		verify(notasFiscais).totalNotaFiscalEmitidas();
+	}
+
+	@Test
+	void deveGerarDigitoVerificador() {
+		Integer resultado = notaFiscalService.geraDV("12345");
+
+		assertEquals(5, resultado);
+	}
+
+	@Test
+	void deveRetornarZeroQuandoRestoForZeroOuUm() {
+		Integer resultado = notaFiscalService.geraDV("123456");
+
+		assertEquals(0, resultado);
+	}
+
+	@Test
+	void deveRetornarZeroQuandoCodigoForInvalido() {
+		Integer resultado = notaFiscalService.geraDV(null);
+
+		assertEquals(0, resultado);
+	}
+
 }
