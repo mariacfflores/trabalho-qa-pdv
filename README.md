@@ -241,7 +241,7 @@ Caso de teste manual executado no TestLink, cobrindo o fluxo de uma despesa.
 | --------------------------------------------------------------------------- | --------------------------------- | --------- |
 | Projeto de Teste: PDVQA:PDV-QA / Plano de Teste: Entrega 1 - PDV - despesas | Realizar a criação de uma despesa | Sucesso   |
 
-Evidência da execução: [`docs/testes_manuais/TesteLink_CriaDespesa.pdf`](docs/testes_manuais/TesteLink_CriaDespesa.pdf)
+Evidência da execução: [`docs/testes_manuais/TestLink_CriaDespesa.pdf`](docs/testes_manuais/TestLink_CriaDespesa.pdf)
 
 ## Uso de Inteligência Artificial
 
