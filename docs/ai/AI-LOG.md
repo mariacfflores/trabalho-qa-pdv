@@ -464,6 +464,6 @@ A versão final está implementada em:
 - **Atividade:** Revisar os testes implementados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) e identificar outros possíveis métodos de serem testados de forma unitária e simples.
 - **Ferramenta:** ChatGPT 5.5 potência média
 - **Prompt/instrução** Analise os testes unitários realizados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) de NotaFiscalService.java em NotaFiscalServiceTest.java e proponha outros métodos da classe que também podem ser testados e diga qual é o nível de complexidade dos testes.
-- **Resultado** Não foram identificados problemas nos testes já implementados e foram identificados os métodos cadastrar(...) tendo complexidade simples e os métodos como salvaXML, removeXML e emitir com complexidade mais alta.
+- **Resultado** Não foram identificados problemas nos testes já implementados e foram identificados os métodos cadastrar(...), tendo complexidade simples, e os métodos como salvaXML, removeXML e emitir com complexidade mais alta.
 - **Decisão** Implementar, com a ajuda da IA, os testes no método cadastrar com complexidade simples e deixar as classes com complexidade maior para eventuais partes futuras do trabalho.
-- **Validação** Os testes rodaram sem problemas na IDE Eclipse `Run: 11/11, Errors: 0, Failures: 0`
+- **Validação** Os testes criados pela IA foram concisos e satisfatórios, não apresentando erros e também não sendo muito complexos, rodando os testes na IDE Eclipse houve o seguinte resultado: `Run: 11/11, Errors: 0, Failures: 0`
