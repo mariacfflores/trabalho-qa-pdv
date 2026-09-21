@@ -40,7 +40,9 @@ Para executar a aplicação utilizando o docker, utilize o seguinte comando na r
 docker compose up -d
 ```
 
-## Projeto original
+## Projeto original - QA UFF 2026.2
+
+### Grupo: Caio Lima, Maria Clara Flores, Paulo Cesar Carrano e Rafael Valverde
 
 Este trabalho utiliza como base o projeto PDV, disponível em:
 
@@ -101,6 +103,10 @@ Credenciais padrão:
 
 - Usuário: `gerente`
 - Senha: `123`
+
+# Classe CartaoLancamentoService
+
+Esta seção reúne os artefatos de teste produzidos pela integrante Maria, referentes à funcionalidade de lançamento de cartão (`CartaoLancamentoService`).
 
 ## Preparação da massa de teste
 
@@ -211,7 +217,7 @@ Evidência da execução: [`docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf`
 
 # Classe NotaFiscalService.java
 
-Esta seção reúne os artefatos de teste produzidos pelo integrante Rafael, referentes à funcionalidade de recebimento de títulos (`NotaFiscalService`).
+Esta seção reúne os artefatos de teste produzidos pelo integrante Rafael, referentes à funcionalidade de nota fiscal (`NotaFiscalService`).
 
 ## Plano de Teste
 
