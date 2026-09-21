@@ -209,10 +209,6 @@ Durante a execução, foi identificado um defeito na tela de pagamento da venda:
 
 Evidência da execução: [`docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf`](docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf)
 
-## Uso de Inteligência Artificial
-
-As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
-
 # Classe NotaFiscalService.java
 
 Esta seção reúne os artefatos de teste produzidos pelo integrante Rafael, referentes à funcionalidade de recebimento de títulos (`NotaFiscalService`).
