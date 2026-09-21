@@ -419,6 +419,7 @@ A versão final está implementada em:
 
 ## Registro 5 - Testes unitários da UsuarioService
 
+- **Responsável:** Paulo Carrano
 - **Atividade:** Projetar casos de testes unitários (classe `UsuarioService`)
 - **Ferramenta:** Claude (Anthropic)
 - **Prompt/instrução:** Os 5 testes unitários (`UsuarioServiceTest`, casos CT01–CT05, cobrindo `cadastrar` novo, `cadastrar` atualização, `lista`, `addGrupo` e `buscaUsuario`) foram feitos pelo integrante. A IA foi usada apenas como auxílio e para revisar o resultado após a primeira execução, que apresentou uma falha.
@@ -428,6 +429,7 @@ A versão final está implementada em:
 
 ## Registro 6 - Achados de inspeção de código (leitura de UsuarioService)
 
+- **Responsável:** Paulo Carrano
 - **Atividade:** Identificação preliminar de problemas de qualidade
 - **Ferramenta:** Claude (Anthropic)
 - **Prompt/instrução:** Pedido de leitura crítica do código de `UsuarioService` em busca de problemas.
@@ -440,6 +442,7 @@ A versão final está implementada em:
 
 ## Registro 7 - Casos de teste manuais (funcionalidade "Cadastro de Usuário")
 
+- **Responsável:** Paulo Carrano
 - **Atividade:** Projetar e executar casos de teste manuais (funcionalidade individual)
 - **Ferramenta:** Claude (Anthropic)
 - **Prompt/instrução:** Solicitado apoio para desenhar casos de teste manuais para a funcionalidade de cadastro de usuário, com base nos caminhos de decisão do método `cadastrar()`, e para depurar erros encontrados durante a execução no ambiente local (Docker).
