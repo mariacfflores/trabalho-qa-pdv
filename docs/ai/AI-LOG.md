@@ -458,7 +458,7 @@ A versão final está implementada em:
 ## Registro 8 — Revisar os testes e explorar outros métodos de `NotaFiscalServiceTest.java`
 
 - **Responsável:** Rafael Valverde Teixeira
-- **Atividade:** Revisar os testes implementados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) e identificar de forma outros possíveis métodos de serem testados de forma unitária e simples.
+- **Atividade:** Revisar os testes implementados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) e identificar outros possíveis métodos de serem testados de forma unitária e simples.
 - **Ferramenta:** ChatGPT 5.5 potência média
 - **Prompt/instrução** Analise os testes unitários realizados sobre os métodos lista(), busca(...), totalNotaFiscalEmitidas() e geraDV(...) de NotaFiscalService.java em NotaFiscalServiceTest.java e proponha outros métodos da classe que também podem ser testados e diga qual é o nível de complexidade dos testes.
 - **Resultado** Não foram identificados problemas nos testes já implementados e foram identificados os métodos cadastrar(...) tendo complexidade simples e os métodos como salvaXML, removeXML e emitir com complexidade mais alta.

@@ -201,13 +201,47 @@ mvn test -Dtest=RecebimentoServiceTest
 
 Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
 
-| ID       | Cenário                                              | Resultado |
-| -------- | ----------------------------------------------------- | --------- |
-| PDVQA-1  | Realizar recebimento de título com desconto           | Falhado   |
+| ID      | Cenário                                     | Resultado |
+| ------- | ------------------------------------------- | --------- |
+| PDVQA-1 | Realizar recebimento de título com desconto | Falhado   |
 
 Durante a execução, foi identificado um defeito na tela de pagamento da venda: o campo "Titulo" não é preenchido com nenhuma opção após a seleção da Forma de Pagamento, impedindo a conclusão do pagamento e gerando um erro não tratado ("Zero length string"). Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/9).
 
 Evidência da execução: [`docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf`](docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf)
+
+## Uso de Inteligência Artificial
+
+As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
+
+# Classe NotaFiscalService.java
+
+Esta seção reúne os artefatos de teste produzidos pelo integrante Rafael, referentes à funcionalidade de recebimento de títulos (`NotaFiscalService`).
+
+## Plano de Teste
+
+[Arquivo Google Docs](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?usp=sharing)
+
+## Testes Unitários
+
+Testes dos métodos `lista(), busca(...), totalNotaFiscalEmitidas(), geraDV(...) e cadastrar(...)` da classe `NotaFiscalService.java`, cobrindo a listagem de notas fiscais, busca por determinada nota, recebimento do total de notas, geração do dígito verificador e cadastro de novas notas, tanto em seus caminhos positivos como negativos:
+
+[`src/test/java/net/originmobi/pdv/service/notafiscal/NotaFiscalServiceTest.java`](src/test/java/net/originmobi/pdv/service/notafiscal/NotaFiscalServiceTest.java)
+
+Para rodar os testes você pode rodar na IDE Eclipse ou executar:
+
+```sh
+mvn test -Dtest=NotaFiscalServiceTest
+```
+
+## Testes Manuais — PDV (Criação de Despesa)
+
+Caso de teste manual executado no TestLink, cobrindo o fluxo de uma despesa.
+
+| ID                                                                          | Cenário                           | Resultado |
+| --------------------------------------------------------------------------- | --------------------------------- | --------- |
+| Projeto de Teste: PDVQA:PDV-QA / Plano de Teste: Entrega 1 - PDV - despesas | Realizar a criação de uma despesa | Sucesso   |
+
+Evidência da execução: [`docs/testes_manuais/TesteLink_CriaDespesa.pdf`](docs/testes_manuais/TesteLink_CriaDespesa.pdf)
 
 ## Uso de Inteligência Artificial
 
