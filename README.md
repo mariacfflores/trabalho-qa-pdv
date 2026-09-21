@@ -181,6 +181,8 @@ Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de su
 | CT-USU-02 | Cadastro com `user` já existente                | Passou    |
 | CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou    |
 
+O arquivo gerado no Testlink relativo ao caso de teste 01 foi adicionado na pasta de [testes_manuais](https://github.com/mariacfflores/trabalho-qa-pdv/tree/master/docs/testes_manuais) 
+
 Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
 
 # Classe RecebimentoService
