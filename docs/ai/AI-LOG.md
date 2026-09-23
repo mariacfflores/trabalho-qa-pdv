@@ -42,56 +42,37 @@ No teste manual, as dificuldades de preparação dos dados foram investigadas se
 
 Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os resultados observados, sem considerar a aprovação dos testes como comprovação de cobertura completa ou ausência de defeitos.
 
-## Registro 4 — Revisão e correção dos testes unitários da `RecebimentoService`
+## Registro — Planejamento, implementação e validação dos testes de recebimento
 
 **Responsável:** Caio de Souza Lima
 
-**Atividade:** Revisão, correção e conserto do ambiente de execução dos testes unitários do método `abrirRecebimento` da classe `RecebimentoService`
+**Atividade:** Revisão e correção dos testes unitários da `RecebimentoService` e auxílio no teste manual de recebimento de título.
 
 **Ferramenta:** Claude (Anthropic)
 
 ### Prompt/instrução
 
-Os cenários de teste do método `abrirRecebimento` (caminho feliz, parcela já quitada, parcela de outro cliente, cliente inexistente e cálculo do valor total) haviam sido escritos manualmente antes da sessão. Foi solicitado à IA que revisasse o código já escrito, apontando erros de compilação, más práticas com Mockito e lacunas de cobertura, e que ajudasse a diagnosticar por que os testes não executavam no Eclipse.
+Os cenários de teste do método `abrirRecebimento` (caminho feliz, parcela já quitada, parcela de outro cliente, cliente inexistente e cálculo do valor total) haviam sido escritos manualmente antes da sessão. Foi solicitado à IA que revisasse o código já escrito, apontando más práticas com Mockito e lacunas de cobertura. Também foi solicitado apoio para estruturar o caso de teste manual de recebimento de título no TestLink e para investigar um erro encontrado durante sua execução.
 
 ### Resultado
 
-A IA identificou uma série de problemas em cadeia:
-
-- imports estáticos conflitantes (`org.junit.Assert.assertEquals` e `org.junit.jupiter.api.Assertions.assertEquals` ao mesmo tempo), impedindo a compilação;
-- incompatibilidade de versões no `pom.xml`: o `spring-boot-starter-parent 2.0.2.RELEASE` fixava versões antigas de `junit-jupiter-api` (5.1.1), `mockito-core` (2.15.0) e `byte-buddy` (1.7.11) que não eram compatíveis entre si nem com Java 17, causando `NoSuchMethodError` em cadeia;
-- o `maven-surefire-plugin` herdado do parent (2.21.0) não sabia executar testes JUnit 5;
-- stubs desnecessários (`UnnecessaryStubbingException`) em métodos mockados cujo retorno não era usado no cenário testado;
-- no teste `deveCalcularValorTotalDasParcelas`, a chamada ao método de produção era feita sem nenhuma asserção sobre o valor calculado, não provando de fato o comportamento pretendido;
-- os testes `deveRecusarParcelaDeOutroCliente` e `deveRecusarClienteInexistente` verificavam apenas o tipo da exceção lançada (`RuntimeException`), sem checar a mensagem nem confirmar que `recebimentos.save(...)` não havia sido chamado — o que poderia mascarar um `NullPointerException` como se fosse a validação de negócio esperada;
-- ausência de um cenário cobrindo o array de parcelas vazio.
+A IA identificou problemas de conteúdo dos testes: stubs desnecessários, ausência de asserção sobre o valor calculado em `deveCalcularValorTotalDasParcelas`, verificação apenas do tipo da exceção (não da mensagem) em dois cenários de rejeição, e ausência de um cenário para array de parcelas vazio. No teste manual, apoiou a estruturação do caso `PDVQA: PDV - QA — Realizar recebimento de título com desconto` e a investigação do erro "Zero length string" encontrado ao tentar concluir o pagamento.
 
 ### Decisão
 
-Foram aceitas e aplicadas as correções de ambiente (`pom.xml`: fixação explícita de `maven-surefire-plugin` 2.22.2, `junit-jupiter-api/params/engine` 5.8.2, `mockito-core`/`mockito-junit-jupiter` 3.12.4 e `byte-buddy`/`byte-buddy-agent` 1.11.13) e a remoção do import duplicado, por serem correções técnicas objetivas de compatibilidade, sem impacto na lógica dos testes.
-
-Quanto ao conteúdo dos testes, foram aceitas as sugestões de reforço:
-
-- adição de `assertEquals` sobre a mensagem da exceção e `verify(recebimentos, never()).save(any())` em `deveRecusarParcelaDeOutroCliente` e `deveRecusarClienteInexistente`;
-- adição de `ArgumentCaptor<Recebimento>` em `deveCalcularValorTotalDasParcelas` para verificar `getValor_total() == 110.0`, já que o método não retorna esse valor diretamente;
-- criação do teste `deveCriarRecebimentoComArrayDeParcelasVazio`, documentando o comportamento real do sistema (cria um recebimento com valor total `0.0` sem lançar exceção).
-
-A sugestão de remover a duplicidade entre `deveCriarRecebimentoComParcelasValidas` e `deveCalcularValorTotalDasParcelas` (por testarem o mesmo caminho de código) foi discutida, mas optou-se por manter os dois testes separados nesta entrega, por já estarem implementados e cobrindo focos de asserção diferentes.
+Foram aceitas as sugestões de reforçar as duas verificações de exceção com a mensagem exata e `verify(..., never())`, adicionar `ArgumentCaptor` ao teste de cálculo do valor total, e criar o teste do array de parcelas vazio. A investigação de causa raiz do bug encontrado no teste manual (uma possível condição de corrida no JavaScript da tela de pagamento) foi descartada do escopo desta entrega, por não ser exigida — optou-se por registrar o defeito em nível de comportamento observado, sem análise técnica da causa.
 
 ### Validação
 
-Após as correções, a suíte foi executada via terminal com Maven (`mvn test -Dtest=RecebimentoServiceTest`), fora do Eclipse, para eliminar variáveis de configuração da IDE:
+As sugestões da IA foram avaliadas quanto à correspondência com as regras da classe `RecebimentoService`, conferindo cada mensagem de exceção linha a linha contra o código-fonte antes de aceitar a asserção correspondente.
 
-```text
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
-BUILD SUCCESS
-```
+A suíte final de testes unitários foi executada via terminal com Maven (`mvn test -Dtest=RecebimentoServiceTest`), fora do Eclipse, para eliminar variáveis de configuração da IDE, resultando em **6 testes aprovados, 0 falhas, 0 erros e `BUILD SUCCESS`**.
 
-Cada correção sugerida pela IA foi conferida manualmente contra o código-fonte de `RecebimentoService.java` antes de ser aceita — por exemplo, a mensagem de exceção `"A parcela " + parcela.getCodigo() + " não pertence ao cliente selecionado"` foi conferida linha a linha antes de ser usada na asserção do teste `deveRecusarParcelaDeOutroCliente`.
+Além do resultado quantitativo, foi avaliado se os cenários cobrem de fato os caminhos de decisão relevantes do método `abrirRecebimento`: são cobertos o caminho feliz, as três validações de negócio (parcela quitada, parcela de outro cliente, cliente inexistente) e o cálculo do valor total, este último verificado via `ArgumentCaptor` sobre o objeto salvo — e não apenas pela ausência de erro na execução. Reconhece-se como limitação que os métodos `receber()` e `remover()` da mesma classe ficaram fora do escopo desta entrega, não fazendo parte da cobertura atual.
 
-A versão final está implementada em:
+No teste manual, o caso `PDVQA: PDV - QA` foi executado na aplicação rodando localmente via Docker Compose. Os três primeiros passos (criação de pedido e abertura do modal de pagamento) passaram; os dois últimos falharam, pois o campo "Titulo" não é preenchido com nenhuma opção, impedindo a conclusão do pagamento e gerando um erro não tratado. O caso foi registrado como **Falhado** no TestLink, e o defeito foi documentado na Issue #9 do repositório.
 
-`src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java`
+Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os resultados observados, sem considerar a aprovação dos testes unitários como comprovação de cobertura completa ou ausência de defeitos — o próprio teste manual, aliás, evidenciou um defeito que os testes unitários (isolados do front-end) não seriam capazes de capturar.
 
 ---
 
