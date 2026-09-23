@@ -56,6 +56,12 @@ foram realizados ajustes de configuração nos arquivos `Dockerfile` e
 `docker-compose.yml`. As alterações realizadas podem ser consultadas no
 histórico de commits deste repositório.
 
+# Plano de Teste
+
+O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilidades, critérios de completude, entregáveis e recursos utilizados na Entrega 1, está disponível em:
+
+[Arquivo Google Docs](https://docs.google.com/document/d/1N3Xuw2kyrPlRuP0aiL2iPkg-wxku48xo6Q0gTgvUDxU/edit?usp=sharing)
+
 # Evidências de Complexidade Ciclomática
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
@@ -155,10 +161,6 @@ Durante a preparação da massa de teste, também foi identificado um comportame
 
 Esta seção reúne os artefatos de teste produzidos pelo integrante Paulo, referentes à funcionalidade de cadastro e gerenciamento de usuários (`UsuarioService`).
 
-## Plano de Teste
-
-[Arquivo Google Docs](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
-
 ## Testes Unitários
 
 Testes da classe `UsuarioService`, casos CT01–CT05, cobrindo cadastro de usuário novo, atualização, listagem, adição de grupo e busca por username:
@@ -189,10 +191,6 @@ Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo
 
 Esta seção reúne os artefatos de teste produzidos pelo integrante Caio, referentes à funcionalidade de recebimento de títulos (`RecebimentoService`).
 
-## Plano de Teste
-
-[Arquivo Google Docs](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=sharing)
-
 ## Testes Unitários
 
 Testes do método `abrirRecebimento` da classe `RecebimentoService`, cobrindo o caminho feliz, validações de negócio (parcela quitada, parcela de outro cliente, cliente inexistente), cálculo do valor total e array de parcelas vazio:
@@ -209,9 +207,9 @@ mvn test -Dtest=RecebimentoServiceTest
 
 Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
 
-| ID      | Cenário                                     | Resultado |
-| ------- | ------------------------------------------- | --------- |
-| PDVQA-1 | Realizar recebimento de título com desconto | Falhado   |
+| ID               | Cenário                                     | Resultado |
+| ---------------- | -------------------------------------------- | --------- |
+| PDVQA: PDV - QA  | Realizar recebimento de título com desconto | Falhado   |
 
 Durante a execução, foi identificado um defeito na tela de pagamento da venda: o campo "Titulo" não é preenchido com nenhuma opção após a seleção da Forma de Pagamento, impedindo a conclusão do pagamento e gerando um erro não tratado ("Zero length string"). Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/9).
 
@@ -220,10 +218,6 @@ Evidência da execução: [`docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf`
 # Classe NotaFiscalService.java
 
 Esta seção reúne os artefatos de teste produzidos pelo integrante Rafael, referentes à funcionalidade de nota fiscal (`NotaFiscalService`).
-
-## Plano de Teste
-
-[Arquivo Google Docs](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?usp=sharing)
 
 ## Testes Unitários
 
