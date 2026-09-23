@@ -60,7 +60,13 @@ histórico de commits deste repositório.
 
 O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilidades, critérios de completude, entregáveis e recursos utilizados na Entrega 1, está disponível em:
 
-[Arquivo Google Docs](https://docs.google.com/document/d/1N3Xuw2kyrPlRuP0aiL2iPkg-wxku48xo6Q0gTgvUDxU/edit?usp=sharing)
+[Plano de Teste Grupo](https://docs.google.com/document/d/1N3Xuw2kyrPlRuP0aiL2iPkg-wxku48xo6Q0gTgvUDxU/edit?usp=sharing)
+
+[Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
+
+[Plano de Teste Maria e Paulo](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0) 
+
+[Plano de Teste Rafael](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?tab=t.0#heading=h.1voh1nmhiv9s)
 
 # Evidências de Complexidade Ciclomática
 
