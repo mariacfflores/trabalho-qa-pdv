@@ -121,5 +121,13 @@ public class CartaoPage {
                 .findElement(situacao)
                 .getText();
     }
+
+     public void aguardarTabelaCarregada() {
+        By tabela = By.cssSelector(".table-dados-cartoes");
+
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(tabela)
+        );
+     }
 }
 
