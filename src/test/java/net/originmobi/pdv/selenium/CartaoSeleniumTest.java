@@ -21,7 +21,12 @@ public class CartaoSeleniumTest {
     private CartaoPage cartaoPage;
 
     @Before
-    public void setUp() {
+        public void setUp() {
+        System.setProperty(
+                "webdriver.chrome.driver",
+                "drivers/chromedriver.exe"
+        );
+
         driver = new ChromeDriver();
         loginPage = new LoginPage(driver);
         cartaoPage = new CartaoPage(driver);
