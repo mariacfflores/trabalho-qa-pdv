@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -31,142 +33,287 @@ import net.originmobi.pdv.utilitarios.DataAtual;
 @Service
 public class CartaoLancamentoService {
 
-	@Autowired
-	private CartaoLancamentoRepository repository;
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(CartaoLancamentoService.class);
 
-	@Autowired
-	private CaixaLancamentoService caixaLancamentos;
+    @Autowired
+    private CartaoLancamentoRepository repository;
 
-	@Autowired
-	private UsuarioService usuarios;
+    @Autowired
+    private CaixaLancamentoService caixaLancamentos;
 
-	private LocalDate dataAtual;
+    @Autowired
+    private UsuarioService usuarios;
 
-	public void lancamento(Double vl_parcela, Optional<Titulo> titulo) {
-		Double taxa = 0.0;
-		Double vl_taxa = 0.0;
-		Double vl_liq_parcela = 0.0;
+    public void lancamento(Double valorParcela, Optional<Titulo> titulo) {
 
-		Double taxa_ante = 0.0;
-		Double vl_taxa_ante = 0.0;
-		Double vl_liq_ant = 0.0;
+        if (!titulo.isPresent()) {
+            throw new IllegalArgumentException("Título não informado");
+        }
 
-		CartaoTipo tipo = null;
-		int dias = 0;
+        Titulo tituloCartao = titulo.get();
 
-		// verifica se é debito ou crédito e pega os valores corretos do titulo
-		if (titulo.get().getTipo().getSigla().equals(TituloTipo.CARTDEB.toString())) {
-			taxa = titulo.get().getMaquina().getTaxa_debito();
-			dias = titulo.get().getMaquina().getDias_debito();
-			tipo = CartaoTipo.DEBITO;
+        Double taxa = 0.0;
+        CartaoTipo tipo = null;
+        int dias = 0;
 
-		} else if (titulo.get().getTipo().getSigla().equals(TituloTipo.CARTCRED.toString())) {
-			taxa = titulo.get().getMaquina().getTaxa_credito();
-			dias = titulo.get().getMaquina().getDias_credito();
-			tipo = CartaoTipo.CREDITO;
-		}
+        if (tituloCartao.getTipo().getSigla()
+                .equals(TituloTipo.CARTDEB.toString())) {
 
-		vl_taxa = (vl_parcela * taxa) / 100;
-		vl_liq_parcela = vl_parcela - vl_taxa;
+            taxa = tituloCartao.getMaquina().getTaxa_debito();
+            dias = tituloCartao.getMaquina().getDias_debito();
+            tipo = CartaoTipo.DEBITO;
 
-		taxa_ante = titulo.get().getMaquina().getTaxa_antecipacao();
-		vl_taxa_ante = (vl_parcela * taxa_ante) / 100;
-		vl_liq_ant = vl_parcela - vl_taxa_ante;
+        } else if (tituloCartao.getTipo().getSigla()
+                .equals(TituloTipo.CARTCRED.toString())) {
 
-		MaquinaCartao maquinaCartao = titulo.get().getMaquina();
+            taxa = tituloCartao.getMaquina().getTaxa_credito();
+            dias = tituloCartao.getMaquina().getDias_credito();
+            tipo = CartaoTipo.CREDITO;
+        }
 
-		DataAtual data = new DataAtual();
-		dataAtual = LocalDate.now();
-		String data_recebimento = data.DataAtualIncrementa(dias);
+        Double valorTaxa =
+                (valorParcela * taxa) / 100;
 
-		CartaoLancamento lancamento = new CartaoLancamento(vl_parcela, taxa, vl_taxa, vl_liq_parcela, taxa_ante,
-				vl_taxa_ante, vl_liq_ant, maquinaCartao, tipo, CartaoSituacao.APROCESSAR,
-				Date.valueOf(data_recebimento), Date.valueOf(dataAtual));
+        Double valorLiquidoParcela =
+                valorParcela - valorTaxa;
 
-		try {
-			repository.save(lancamento);
-		} catch (Exception e) {
-			System.out.println(e);
-		}
+        Double taxaAntecipacao =
+                tituloCartao.getMaquina().getTaxa_antecipacao();
 
-	}
+        Double valorTaxaAntecipacao =
+                (valorParcela * taxaAntecipacao) / 100;
 
-	public List<CartaoLancamento> listar(CartaoFilter filter) {
-		String situacao = filter.getSituacao() == null ? "%" : filter.getSituacao().toString();
-		String tipo = filter.getTipo() == null ? "%" : filter.getTipo().toString();
-		String data_recebimento = filter.getData_recebimento() == null || filter.getData_recebimento().isEmpty() ? "%"
-				: filter.getData_recebimento().toString().replace("/", "-");
-		return repository.buscaLancamentos(situacao, tipo, data_recebimento);
-	}
+        Double valorLiquidoAntecipacao =
+                valorParcela - valorTaxaAntecipacao;
 
-	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-	public String processar(CartaoLancamento cartaoLancamento) {
+        MaquinaCartao maquinaCartao =
+                tituloCartao.getMaquina();
 
-		if (cartaoLancamento.getSituacao().equals(CartaoSituacao.PROCESSADO))
-			throw new RuntimeException("Registro já processado");
+        DataAtual data = new DataAtual();
 
-		if (cartaoLancamento.getSituacao().equals(CartaoSituacao.ANTECIPADO))
-			throw new RuntimeException("Registro já foi antecipado");
+        LocalDate dataAtual =
+                LocalDate.now();
 
-		Double valor = cartaoLancamento.getVlLiqParcela();
-		TipoLancamento tipo = TipoLancamento.RECEBIMENTO;
-		EstiloLancamento estilo = EstiloLancamento.ENTRADA;
-		Caixa banco = cartaoLancamento.getMaquina_cartao().getBanco();
+        String dataRecebimento =
+                data.DataAtualIncrementa(dias);
 
-		Aplicacao aplicacao = Aplicacao.getInstancia();
-		Usuario usuario = usuarios.buscaUsuario(aplicacao.getUsuarioAtual());
+        CartaoLancamento lancamento =
+                new CartaoLancamento(
+                        valorParcela,
+                        taxa,
+                        valorTaxa,
+                        valorLiquidoParcela,
+                        taxaAntecipacao,
+                        valorTaxaAntecipacao,
+                        valorLiquidoAntecipacao,
+                        maquinaCartao,
+                        tipo,
+                        CartaoSituacao.APROCESSAR,
+                        Date.valueOf(dataRecebimento),
+                        Date.valueOf(dataAtual)
+                );
 
-		CaixaLancamento lancamento = new CaixaLancamento("Referênte a processamento de cartão", valor, tipo, estilo,
-				banco, usuario);
+        try {
+            repository.save(lancamento);
 
-		try {
-			caixaLancamentos.lancamento(lancamento);
-		} catch (Exception e) {
-			throw new RuntimeException("Erro ao tentar realizar o processamento, chame o suporte");
-		}
+        } catch (Exception e) {
+            LOGGER.error(
+                    "Erro ao salvar lançamento de cartão",
+                    e
+            );
+        }
+    }
 
-		try {
-			cartaoLancamento.setSituacao(CartaoSituacao.PROCESSADO);
-		} catch (Exception e) {
-			throw new RuntimeException("Erro ao tentar realizar o processamento, chame o suporte");
-		}
+    public List<CartaoLancamento> listar(CartaoFilter filter) {
 
-		return "Processamento realizado com sucesso";
-	}
+        String situacao =
+                filter.getSituacao() == null
+                        ? "%"
+                        : filter.getSituacao().toString();
 
-	public String antecipar(CartaoLancamento cartaoLancamento) {
-		if (cartaoLancamento.getSituacao().equals(CartaoSituacao.PROCESSADO))
-			throw new RuntimeException("Registro já processado");
+        String tipo =
+                filter.getTipo() == null
+                        ? "%"
+                        : filter.getTipo().toString();
 
-		if (cartaoLancamento.getSituacao().equals(CartaoSituacao.ANTECIPADO))
-			throw new RuntimeException("Registro já foi antecipado");
+        String dataRecebimento =
+                filter.getData_recebimento() == null
+                        || filter.getData_recebimento().isEmpty()
+                        ? "%"
+                        : filter.getData_recebimento()
+                                .replace("/", "-");
 
-		Double valor = cartaoLancamento.getVlLiqAntecipacao();
-		TipoLancamento tipo = TipoLancamento.RECEBIMENTO;
-		EstiloLancamento estilo = EstiloLancamento.ENTRADA;
-		Caixa banco = cartaoLancamento.getMaquina_cartao().getBanco();
+        return repository.buscaLancamentos(
+                situacao,
+                tipo,
+                dataRecebimento
+        );
+    }
 
-		Aplicacao aplicacao = Aplicacao.getInstancia();
-		Usuario usuario = usuarios.buscaUsuario(aplicacao.getUsuarioAtual());
+    @Transactional(
+            readOnly = false,
+            propagation = Propagation.REQUIRED
+    )
+    public String processar(
+            CartaoLancamento cartaoLancamento
+    ) {
 
-		CaixaLancamento lancamento = new CaixaLancamento(
-				"Referênte a antecipação de cartão código " + cartaoLancamento.getCodigo(), valor, tipo, estilo, banco,
-				usuario);
+        if (cartaoLancamento.getSituacao()
+                .equals(CartaoSituacao.PROCESSADO)) {
 
-		try {
-			caixaLancamentos.lancamento(lancamento);
-		} catch (Exception e) {
-			throw new RuntimeException("Erro ao tentar realizar a antecipação, chame o suporte");
-		}
+            throw new CartaoLancamentoException(
+                    "Registro já processado"
+            );
+        }
 
-		try {
-			cartaoLancamento.setSituacao(CartaoSituacao.ANTECIPADO);
-			repository.save(cartaoLancamento);
-		} catch (Exception e) {
-			throw new RuntimeException("Erro ao tentar realizar a antecipação, chame o suporte");
-		}
+        if (cartaoLancamento.getSituacao()
+                .equals(CartaoSituacao.ANTECIPADO)) {
 
-		return "Antecipação realizada com sucesso";
-	}
+            throw new CartaoLancamentoException(
+                    "Registro já foi antecipado"
+            );
+        }
 
+        Double valor =
+                cartaoLancamento.getVlLiqParcela();
+
+        TipoLancamento tipo =
+                TipoLancamento.RECEBIMENTO;
+
+        EstiloLancamento estilo =
+                EstiloLancamento.ENTRADA;
+
+        Caixa banco =
+                cartaoLancamento
+                        .getMaquina_cartao()
+                        .getBanco();
+
+        Aplicacao aplicacao =
+                Aplicacao.getInstancia();
+
+        Usuario usuario =
+                usuarios.buscaUsuario(
+                        aplicacao.getUsuarioAtual()
+                );
+
+        CaixaLancamento lancamento =
+                new CaixaLancamento(
+                        "Referênte a processamento de cartão",
+                        valor,
+                        tipo,
+                        estilo,
+                        banco,
+                        usuario
+                );
+
+        try {
+            caixaLancamentos.lancamento(lancamento);
+
+        } catch (Exception e) {
+
+            throw new CartaoLancamentoException(
+                    "Erro ao tentar realizar o processamento, chame o suporte",
+                    e
+            );
+        }
+
+        try {
+            cartaoLancamento.setSituacao(
+                    CartaoSituacao.PROCESSADO
+            );
+
+        } catch (Exception e) {
+
+            throw new CartaoLancamentoException(
+                    "Erro ao tentar realizar o processamento, chame o suporte",
+                    e
+            );
+        }
+
+        return "Processamento realizado com sucesso";
+    }
+
+    public String antecipar(
+            CartaoLancamento cartaoLancamento
+    ) {
+
+        if (cartaoLancamento.getSituacao()
+                .equals(CartaoSituacao.PROCESSADO)) {
+
+            throw new CartaoLancamentoException(
+                    "Registro já processado"
+            );
+        }
+
+        if (cartaoLancamento.getSituacao()
+                .equals(CartaoSituacao.ANTECIPADO)) {
+
+            throw new CartaoLancamentoException(
+                    "Registro já foi antecipado"
+            );
+        }
+
+        Double valor =
+                cartaoLancamento
+                        .getVlLiqAntecipacao();
+
+        TipoLancamento tipo =
+                TipoLancamento.RECEBIMENTO;
+
+        EstiloLancamento estilo =
+                EstiloLancamento.ENTRADA;
+
+        Caixa banco =
+                cartaoLancamento
+                        .getMaquina_cartao()
+                        .getBanco();
+
+        Aplicacao aplicacao =
+                Aplicacao.getInstancia();
+
+        Usuario usuario =
+                usuarios.buscaUsuario(
+                        aplicacao.getUsuarioAtual()
+                );
+
+        CaixaLancamento lancamento =
+                new CaixaLancamento(
+                        "Referênte a antecipação de cartão código "
+                                + cartaoLancamento.getCodigo(),
+                        valor,
+                        tipo,
+                        estilo,
+                        banco,
+                        usuario
+                );
+
+        try {
+            caixaLancamentos.lancamento(lancamento);
+
+        } catch (Exception e) {
+
+            throw new CartaoLancamentoException(
+                    "Erro ao tentar realizar a antecipação, chame o suporte",
+                    e
+            );
+        }
+
+        try {
+            cartaoLancamento.setSituacao(
+                    CartaoSituacao.ANTECIPADO
+            );
+
+            repository.save(cartaoLancamento);
+
+        } catch (Exception e) {
+
+            throw new CartaoLancamentoException(
+                    "Erro ao tentar realizar a antecipação, chame o suporte",
+                    e
+            );
+        }
+
+        return "Antecipação realizada com sucesso";
+    }
 }
