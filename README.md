@@ -526,6 +526,8 @@ Após as correções, uma nova análise foi realizada:
 
 Os 14 testes unitários e os 3 testes de integração continuaram sendo executados com sucesso após as alterações.
 
+Os resultados apresentados nas seções anteriores de JaCoCo e PIT correspondem à versão anterior às refatorações do SonarQube.
+
 As evidências do SonarQube estão armazenadas em:
 
 ```text

@@ -8,7 +8,7 @@ Interações relacionadas apenas a configuração de ambiente, execução de fer
 
 ---
 
-## Registro — Planejamento, implementação e validação dos testes de cartões
+## Registro — Planejamento, implementação e validação dos testes de cartões - entrega 1
 
 **Responsável:** Maria Clara Flores
 
@@ -41,6 +41,48 @@ A versão final foi reexecutada com **8 testes aprovados, 0 falhas, 0 erros e `B
 No teste manual, as dificuldades de preparação dos dados foram investigadas separadamente do comportamento de antecipação. Após atender às pré-condições, o lançamento passou de `A Processar` para `Antecipado`, e o caso foi registrado como **Passou** no TestLink.
 
 Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os resultados observados, sem considerar a aprovação dos testes como comprovação de cobertura completa ou ausência de defeitos.
+
+## Registro — Planejamento, implementação e validação dos testes de cartões - entrega 2
+
+**Responsável:** Maria Clara Flores
+
+**Ferramenta:** ChatGPT
+
+### Prompt/instrução
+
+Foi solicitado apoio para evoluir os 6 testes que haviam sido adiados na Entrega 1 por falta de isolamento adequado das dependências. Nesta etapa, eles foram retomados após o uso de mocks e ajustes na preparação dos testes.
+
+Ao longo das interações, foram definidos critérios para orientar o uso da IA, como preservar as regras existentes da classe, isolar dependências com mocks quando adequado, validar os cálculos e efeitos dos métodos (e não apenas se uma chamada ocorreu) e não considerar cobertura, mutação ou correções como concluídas antes da execução das respectivas ferramentas.
+
+Também foram fornecidos à IA detalhes do fluxo real da aplicação, principalmente para o Selenium, para que os testes refletissem as pré-condições e etapas efetivamente necessárias no PDV.
+
+### Resultado
+
+A IA apoiou a ampliação da suíte unitária de 8 para 14 testes, a implementação de 3 testes de integração e dos testes Selenium funcional e de desempenho.
+
+Também auxiliou na interpretação dos relatórios de JaCoCo e PIT, na análise das issues apontadas pelo SonarQube e na organização da avaliação segundo a ISO 25010.
+
+A versão final apresentou **14 testes unitários e 3 testes de integração aprovados, além de 98% de cobertura de instruções, 90% de branches e 91% de mutation coverage**.
+
+### Decisão
+
+As sugestões da IA não foram aplicadas automaticamente. Durante a implementação do Selenium, a responsável identificou que a solução proposta não considerava corretamente a preparação do ambiente e da massa de teste. O teste funcional dependia da aplicação em execução e da existência prévia de um lançamento em situação `A Processar`. Essa condição foi percebida durante a execução e levou à revisão das instruções e da preparação do cenário.
+
+Também foi sugerido o uso de WebDriverManager para tornar a configuração do ChromeDriver mais portátil. A alternativa chegou a ser implementada, mas apresentou comportamento anômalo durante a execução do projeto. A mudança foi revertida e foi mantida a configuração por caminho relativo, posteriormente apresentada à professora e aprovada.
+
+Na avaliação da ISO 25010, foi rejeitada a criação de faixas numéricas arbitrárias para justificar cada nota, pois esses limites não faziam parte dos requisitos do sistema. Optou-se por uma escala geral sustentada pelas evidências realmente produzidas.
+
+No teste de mutação, 20 dos 22 mutantes foram eliminados, resultando em 91% de mutation coverage. Como o resultado já superava o mínimo de 80% exigido pelo trabalho, decidiu-se encerrar essa etapa sem realizar novas alterações apenas para elevar o percentual.
+
+Na análise do SonarQube, algumas correções exigiram alterações no código de produção. Essas mudanças foram aceitas apenas quando não alteravam as regras de negócio da `CartaoLancamentoService`. Após as etapas de refatoração, os testes unitários e de integração foram reexecutados para verificar se o comportamento esperado havia sido preservado.
+
+### Validação
+
+As correções do SonarQube foram realizadas em etapas. A análise inicial apresentou 25 issues. Após uma primeira rodada de correções, os testes foram reexecutados antes de uma nova análise, que reduziu o resultado para 8 issues. Depois da segunda rodada, os testes foram novamente executados com sucesso e o SonarQube apresentou 0 issues.
+
+Problemas de ambiente também foram tratados separadamente de falhas dos testes. Quando `mvn test` apresentou erro em `PdvApplicationTests.contextLoads`, os logs e o histórico do projeto foram verificados antes de qualquer alteração, constatando-se que a falha relacionada ao hostname `pdv-db` já existia anteriormente e não havia sido introduzida pelos novos testes.
+
+Assim, a IA foi utilizada como apoio para propor e revisar soluções, enquanto a preparação do ambiente, a interpretação dos resultados, a rejeição de alternativas inadequadas e a validação final permaneceram sob responsabilidade da integrante.
 
 ## Registro — Planejamento, implementação e validação dos testes de recebimento
 
