@@ -64,7 +64,9 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
 
-[Plano de Teste Maria e Paulo](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0) 
+[Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0) 
+
+[Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing) 
 
 [Plano de Teste Rafael](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?tab=t.0#heading=h.1voh1nmhiv9s)
 
@@ -72,12 +74,12 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
 
-| Classe                       | Complexidade ciclomática |
-| ---------------------------- | -----------------------: |
-| RecebimentoService.java      |                       20 |
-| NotaFiscalService.java       |                       16 |
-| CartaoLancamentoService.java |                       14 |
-| UsuarioService.java          |                       11 |
+| Classe                       | Complexidade ciclomática | Responsável          |
+| ---------------------------- | -----------------------: | -------------------- |
+| RecebimentoService.java      |                       20 | Caio Lima            |
+| NotaFiscalService.java       |                       16 | Rafael Valverde      |
+| CartaoLancamentoService.java |                       14 | Maria Clara Flores   |
+| UsuarioService.java          |                       11 | Paulo Cesar Carrano  |
 
 Todas as classes selecionadas apresentam complexidade ciclomática maior ou igual a 10.
 
@@ -250,3 +252,375 @@ Evidência da execução: [`docs/testes_manuais/TestLink_CriaDespesa.pdf`](docs/
 ## Uso de Inteligência Artificial
 
 As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
+
+# Entrega 2 — Testes, Qualidade e Inspeção de Código
+
+Esta seção reúne os artefatos desenvolvidos para a Entrega 2 do trabalho.
+
+Nesta etapa, cada integrante evoluiu os testes da classe selecionada anteriormente com base na complexidade ciclomática, incluindo ampliação dos testes unitários, testes de integração, análise estrutural, teste baseado em defeitos, inspeção estática do código e, quando aplicável, testes de sistema.
+
+## Testes unitários
+
+Os testes unitários da `CartaoLancamentoService` foram ampliados de **8 para 14 casos de teste**.
+
+As dependências externas da classe foram isoladas utilizando Mockito, incluindo:
+
+- `CartaoLancamentoRepository`;
+- `CaixaLancamentoService`;
+- `UsuarioService`.
+
+Também foi utilizado `ArgumentCaptor` nos testes de `lancamento()` para validar os valores do objeto enviado ao repositório, incluindo taxas, valores líquidos, tipo do cartão e demais atributos calculados.
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/service/cartao/CartaoLancamentoServiceTest.java
+```
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=CartaoLancamentoServiceTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Testes de integração
+
+Foram implementados **3 testes de integração** para verificar a interação da `CartaoLancamentoService` com os serviços envolvidos nos fluxos de processamento e antecipação.
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/service/cartao/CartaoLancamentoServiceIntegrationTest.java
+```
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=CartaoLancamentoServiceIntegrationTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Cobertura estrutural — JaCoCo
+
+A cobertura estrutural da `CartaoLancamentoService` foi medida utilizando o JaCoCo.
+
+Resultados obtidos:
+
+| Métrica | Resultado |
+| ------- | --------: |
+| Cobertura de instruções | 98% |
+| Cobertura de branches | 90% |
+
+A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
+
+As evidências estão armazenadas em:
+
+```text
+docs/evidencias/cobertura/
+```
+
+## Teste baseado em defeitos — PIT Mutation Testing
+
+O PIT Mutation Testing foi executado sobre a mesma classe utilizada para a análise estrutural.
+
+Resultados:
+
+| Métrica | Resultado |
+| ------- | --------: |
+| Mutações geradas | 22 |
+| Mutações eliminadas | 20 |
+| Mutation Coverage | 91% |
+| Test Strength | 95% |
+
+O escore de mutação obtido superou a meta mínima de **80%**.
+
+As evidências estão armazenadas em:
+
+```text
+docs/evidencias/mutacao/
+```
+
+## Testes de sistema com Selenium
+
+Foram implementados testes de sistema utilizando Selenium WebDriver.
+
+Os testes automatizam a utilização da aplicação pelo navegador e dependem da aplicação estar em execução.
+
+Antes de executar os testes Selenium, suba o ambiente:
+
+```powershell
+docker compose up -d
+```
+
+A aplicação deve ficar disponível em:
+
+```text
+http://localhost:8080
+```
+
+### Configuração do ChromeDriver
+
+Os testes Selenium utilizam o Google Chrome.
+
+É necessário utilizar um ChromeDriver compatível:
+
+- com o sistema operacional da máquina;
+- com a versão instalada do Google Chrome.
+
+Crie uma pasta chamada `drivers` na raiz do projeto:
+
+```text
+pdv/
+├── drivers/
+├── src/
+├── docs/
+├── pom.xml
+└── ...
+```
+
+Coloque o executável do ChromeDriver dentro dessa pasta.
+
+No ambiente Windows utilizado durante o desenvolvimento, o caminho esperado é:
+
+```text
+drivers/chromedriver.exe
+```
+
+A pasta `drivers/` está presente no `.gitignore`, portanto o executável não é versionado no repositório.
+
+Cada ambiente de execução deve utilizar o ChromeDriver correspondente ao seu sistema operacional e à versão instalada do Chrome.
+
+## Teste funcional Selenium — antecipação de cartão
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/selenium/CartaoSeleniumTest.java
+```
+
+O teste automatiza o fluxo de antecipação de um lançamento de cartão.
+
+O fluxo validado é:
+
+```text
+A Processar -> Antecipado
+```
+
+### Pré-condição
+
+Antes de executar o teste, deve existir **pelo menos um lançamento de cartão com situação `A Processar`**.
+
+Uma forma de preparar essa massa de teste pela aplicação é:
+
+1. garantir que exista um produto com estoque disponível;
+2. criar um pedido;
+3. gerar a venda;
+4. realizar o pagamento utilizando cartão de crédito.
+
+Após o pagamento, deve existir um lançamento disponível na área de gerenciamento de cartões com situação:
+
+```text
+A Processar
+```
+
+O teste:
+
+1. realiza o login;
+2. acessa a área de gerenciamento de cartões;
+3. localiza um lançamento disponível para antecipação;
+4. seleciona a opção `Antecipar`;
+5. confirma a operação;
+6. verifica se a situação foi alterada para `Antecipado`.
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=CartaoSeleniumTest"
+```
+
+## Teste não funcional de desempenho
+
+Também foi implementado um teste Selenium para avaliar o tempo de carregamento da tela de gerenciamento de cartões.
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/selenium/CartaoDesempenhoSeleniumTest.java
+```
+
+O critério adotado foi:
+
+```text
+Tempo máximo para a tela ficar disponível para interação: 5 segundos
+```
+
+Na execução registrada durante o desenvolvimento, o tempo medido foi:
+
+```text
+986 ms
+```
+
+O resultado ficou abaixo do limite definido.
+
+Este teste avalia o tempo de resposta observado no ambiente utilizado no trabalho e não corresponde a um teste de carga ou estresse.
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=CartaoDesempenhoSeleniumTest"
+```
+
+O teste de desempenho exige que a aplicação esteja em execução, mas não depende da existência de um lançamento com situação `A Processar`.
+
+## Inspeção estática — SonarQube
+
+A `CartaoLancamentoService` também foi analisada utilizando SonarQube.
+
+### Antes das correções
+
+A análise inicial apresentou:
+
+```text
+25 issues
+```
+
+sendo:
+
+```text
+1 Bug
+24 Code Smells
+```
+
+Entre os problemas identificados estavam:
+
+- acesso ao conteúdo de `Optional` sem validação prévia;
+- inicializações e atribuições desnecessárias;
+- nomes de variáveis fora da convenção;
+- uso de `System.out`;
+- uso de exceções genéricas;
+- outros problemas de manutenibilidade apontados pela ferramenta.
+
+### Depois das correções
+
+A classe foi refatorada e uma exceção específica para lançamentos de cartão foi criada.
+
+Após as correções, uma nova análise foi realizada:
+
+```text
+0 issues
+0 effort
+```
+
+Os 14 testes unitários e os 3 testes de integração continuaram sendo executados com sucesso após as alterações.
+
+As evidências do SonarQube estão armazenadas em:
+
+```text
+docs/evidencias/sonar/
+```
+
+## Avaliação ISO/IEC 25010
+
+A funcionalidade também foi avaliada com base nas oito características de qualidade do produto da **ISO/IEC 25010:2011**.
+
+Foi utilizada uma escala de 1 a 5, considerando:
+
+- a qualidade observada no escopo analisado;
+- as medidas obtidas durante os testes;
+- a quantidade e a força das evidências disponíveis.
+
+A análise considera características como:
+
+- adequação funcional;
+- eficiência de desempenho;
+- compatibilidade;
+- usabilidade;
+- confiabilidade;
+- segurança;
+- manutenibilidade;
+- portabilidade.
+
+A avaliação completa, incluindo medidas, notas e justificativas, está documentada no Plano de Teste.
+
+## Observação sobre a execução de `mvn test`
+
+A execução indiscriminada de:
+
+```powershell
+mvn test
+```
+
+pode apresentar erro no teste já existente:
+
+```text
+PdvApplicationTests.contextLoads
+```
+
+Esse teste utiliza `@SpringBootTest` e tenta inicializar o contexto completo da aplicação, incluindo a conexão com o banco de dados.
+
+Quando o Maven é executado diretamente no host, o teste pode não conseguir resolver o hostname:
+
+```text
+pdv-db
+```
+
+utilizado pela rede configurada no Docker Compose.
+
+Esse comportamento já existia anteriormente no projeto e não é causado pelos novos testes da Entrega 2.
+
+Para validar os testes da `CartaoLancamentoService`, recomenda-se executar individualmente:
+
+```powershell
+mvn test "-Dtest=CartaoLancamentoServiceTest"
+```
+
+```powershell
+mvn test "-Dtest=CartaoLancamentoServiceIntegrationTest"
+```
+
+```powershell
+mvn test "-Dtest=CartaoDesempenhoSeleniumTest"
+```
+
+e, após preparar um lançamento com situação `A Processar`:
+
+```powershell
+mvn test "-Dtest=CartaoSeleniumTest"
+```
+
+---
+
+# Classe RecebimentoService.java — Entrega 2
+
+Seção destinada aos artefatos da Entrega 2 relacionados à `RecebimentoService`.
+
+**Responsável:** Caio Lima.
+
+---
+
+# Classe NotaFiscalService.java — Entrega 2
+
+Seção destinada aos artefatos da Entrega 2 relacionados à `NotaFiscalService`.
+
+**Responsável:** Rafael Valverde.
+
+---
+
+# Classe UsuarioService.java — Entrega 2
+
+Seção destinada aos artefatos da Entrega 2 relacionados à `UsuarioService`.
+
+**Responsável:** Paulo Cesar Carrano.
