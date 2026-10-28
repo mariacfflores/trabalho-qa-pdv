@@ -68,6 +68,8 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing) 
 
+[Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0)
+
 [Plano de Teste Rafael](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?tab=t.0#heading=h.1voh1nmhiv9s)
 
 # Evidências de Complexidade Ciclomática
@@ -626,3 +628,249 @@ Seção destinada aos artefatos da Entrega 2 relacionados à `NotaFiscalService`
 Seção destinada aos artefatos da Entrega 2 relacionados à `UsuarioService`.
 
 **Responsável:** Paulo Cesar Carrano.
+
+## Testes unitários
+
+Os testes unitários da `UsuarioService` foram ampliados de **5 para 18 casos de teste**.
+
+As dependências externas da classe foram isoladas utilizando Mockito:
+
+- `UsuarioRepository`;
+- `GrupoUsuarioService`.
+
+Os novos casos cobrem:
+
+- cadastro com username já existente e com pessoa já vinculada a outro usuário;
+- criptografia da senha (BCrypt) e preenchimento da data de cadastro;
+- atualização sem verificação de duplicidade e tratamento de erro ao salvar;
+- listagem vazia;
+- adição de grupo já existente;
+- remoção de grupo, incluindo grupo não vinculado e erro ao salvar;
+- busca de usuário inexistente.
+
+Nos novos casos foram utilizados objetos reais de `Usuario`, `Pessoa` e `GrupoUsuario`, permitindo verificar os valores gravados pelo serviço, como a senha criptografada e a lista de grupos, e não apenas se os métodos foram chamados.
+
+O caso **CT17** (`deveRemoverGrupoComCodigoMaiorQue127`) evidenciou um defeito em `removeGrupo`: os códigos dos grupos eram comparados com `==`, que compara a referência dos objetos `Long` e não o valor. Como o Java só reaproveita objetos `Long` entre -128 e 127, grupos com código acima de 127 nunca eram removidos. O defeito foi corrigido com `.equals()` (ver seção do SonarQube).
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/service/UsuarioServiceTest.java
+```
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=UsuarioServiceTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Testes de integração
+
+Foram implementados **3 testes de integração** para verificar a interação entre a `UsuarioService` e a `GrupoUsuarioService`, ambas reais. Apenas os repositórios foram substituídos por dublês de teste.
+
+Os cenários são:
+
+- adição de grupo ao usuário;
+- adição de grupo já existente;
+- remoção de grupo do usuário.
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/service/UsuarioServiceIntegrationTest.java
+```
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=UsuarioServiceIntegrationTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Cobertura estrutural — JaCoCo
+
+A cobertura estrutural da `UsuarioService` foi medida utilizando o JaCoCo.
+
+Resultados obtidos:
+
+| Métrica | Entrega 1 | Entrega 2 |
+| ------- | --------: | --------: |
+| Cobertura de instruções | 60% | 100% |
+| Cobertura de branches | 42% (5/12) | 100% (12/12) |
+
+A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
+
+Para gerar o relatório:
+
+```powershell
+mvn test "-Dtest=UsuarioServiceTest" jacoco:report
+```
+
+O relatório é gerado em `target/site/jacoco/index.html`.
+
+Observação: com a opção `-DforkCount=0` os testes são executados, mas o JaCoCo não registra a cobertura. Para medir a cobertura, a opção não deve ser utilizada.
+
+As evidências estão armazenadas em:
+
+```text
+docs/evidencias/cobertura/
+```
+
+## Teste baseado em defeitos — PIT Mutation Testing
+
+O PIT Mutation Testing foi executado sobre a mesma classe utilizada para a análise estrutural.
+
+Como os testes da `UsuarioService` utilizam JUnit 5, foi adicionado ao `pom.xml` o `pitest-junit5-plugin`. Sem ele, o PIT não executa testes JUnit 5. A execução do PIT da `CartaoLancamentoService` não foi alterada.
+
+Resultados:
+
+| Métrica | Entrega 1 | Entrega 2 |
+| ------- | --------: | --------: |
+| Mutações geradas | 18 | 18 |
+| Mutações eliminadas | 8 | 18 |
+| Mutation Coverage | 44% | 100% |
+| Test Strength | — | 100% |
+
+O escore de mutação obtido superou a meta mínima de **80%**.
+
+Na Entrega 1, dois mutantes sobreviviam mesmo com as linhas cobertas: a remoção da chamada que preenche a data de cadastro e a remoção da chamada que grava a senha criptografada. Os testes passavam por essas linhas, mas não verificavam seus efeitos. O caso **CT09** passou a verificar os dois.
+
+Como a configuração do PIT no `pom.xml` aponta para a `CartaoLancamentoService`, a classe e os testes são informados na linha de comando:
+
+```powershell
+mvn test-compile org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=net.originmobi.pdv.service.UsuarioService" "-DtargetTests=net.originmobi.pdv.service.UsuarioServiceTest"
+```
+
+O relatório é gerado em `target/pit-reports/index.html`.
+
+As evidências estão armazenadas em:
+
+```text
+docs/evidencias/mutacao/
+```
+
+## Teste funcional Selenium — cadastro de usuário
+
+Arquivo:
+
+```text
+src/test/java/net/originmobi/pdv/selenium/UsuarioSeleniumTest.java
+```
+
+O teste automatiza o fluxo de cadastro de usuário pela interface.
+
+A execução exige a aplicação em execução e o ChromeDriver configurado, conforme descrito em [Configuração do ChromeDriver](#configuração-do-chromedriver).
+
+### Pré-condição
+
+O cadastro de usuário exige uma pessoa ainda não vinculada a outro usuário. Por isso, o próprio teste cadastra uma nova pessoa antes de cadastrar o usuário.
+
+Como o sistema não aceita CPF nem username repetidos, o teste gera dados únicos a cada execução. Não é necessário preparar massa de teste.
+
+O campo "Número" do endereço é preenchido com até 6 caracteres, devido ao defeito registrado na [issue #6](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
+
+O teste:
+
+1. realiza o login;
+2. cadastra uma nova pessoa;
+3. cadastra um usuário vinculado à pessoa criada;
+4. verifica a mensagem `Usuário salvo com sucesso`;
+5. verifica se o usuário aparece na listagem, vinculado à pessoa correta.
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=UsuarioSeleniumTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Durante a execução do teste, foi encontrado um defeito no cadastro de pessoa: a data de nascimento é gravada incorreta, pois o datepicker da tela e o servidor utilizam formatos de data diferentes. O defeito foi registrado na [issue #23](https://github.com/mariacfflores/trabalho-qa-pdv/issues/23).
+
+## Inspeção estática — SonarQube
+
+A `UsuarioService` foi analisada utilizando o SonarQube Community Build 26.10, com o perfil de regras padrão.
+
+A análise confirmou a complexidade ciclomática da classe:
+
+```text
+11
+```
+
+### Antes da correção
+
+A análise inicial apresentou:
+
+```text
+1 issue
+```
+
+sendo:
+
+```text
+1 Bug (Reliability)
+```
+
+A issue (`java:S4973`) apontou a comparação de objetos `Long` com `==` em `removeGrupo`. É o mesmo defeito evidenciado pelo caso de teste **CT17**, encontrado de forma independente pelo teste e pela inspeção estática.
+
+### Depois da correção
+
+A comparação foi alterada para `.equals()`.
+
+Após a correção, uma nova análise foi realizada:
+
+```text
+0 issues
+```
+
+Os 18 testes unitários continuaram sendo executados com sucesso após a correção, incluindo o CT17, que antes falhava. Os resultados de JaCoCo e PIT apresentados acima correspondem à versão posterior à correção.
+
+As evidências do SonarQube estão armazenadas em:
+
+```text
+docs/evidencias/sonar/
+```
+
+## Avaliação ISO/IEC 25010
+
+A funcionalidade de cadastro e gerenciamento de usuários também foi avaliada com base nas oito características de qualidade do produto da **ISO/IEC 25010:2011**, utilizando uma escala de 1 a 5.
+
+A avaliação completa, incluindo medidas, notas e justificativas, está documentada no [Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0).
+
+## Observação sobre a execução de `mvn test`
+
+Assim como descrito na seção da `CartaoLancamentoService`, a execução de `mvn test` sem filtro pode falhar em `PdvApplicationTests.contextLoads` quando o banco não está acessível. Os testes Selenium também dependem da aplicação em execução.
+
+Para validar os testes da `UsuarioService`, recomenda-se executar individualmente:
+
+```powershell
+mvn test "-Dtest=UsuarioServiceTest"
+```
+
+```powershell
+mvn test "-Dtest=UsuarioServiceIntegrationTest"
+```
+
+e, com a aplicação em execução:
+
+```powershell
+mvn test "-Dtest=UsuarioSeleniumTest"
+```

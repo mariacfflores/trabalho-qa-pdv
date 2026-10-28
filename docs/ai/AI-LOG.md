@@ -168,3 +168,50 @@ Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os
 - **Resultado** Não foram identificados problemas nos testes já implementados e foram identificados os métodos cadastrar(...), tendo complexidade simples, e os métodos como salvaXML, removeXML e emitir com complexidade mais alta.
 - **Decisão** Implementar, com a ajuda da IA, os testes no método cadastrar com complexidade simples e deixar as classes com complexidade maior para eventuais partes futuras do trabalho.
 - **Validação** Os testes criados pela IA foram concisos e satisfatórios, não apresentando erros e também não sendo muito complexos, rodando os testes na IDE Eclipse houve o seguinte resultado: `Run: 11/11, Errors: 0, Failures: 0`
+
+---
+
+## Registro 9 - Ampliação dos testes unitários, cobertura, mutação e Sonar da UsuarioService (Entrega 2)
+
+- **Responsável:** Paulo Carrano
+- **Atividade:** Ampliar os testes unitários da `UsuarioService`, medir a cobertura (JaCoCo) e o escore de mutação (PIT), executar o SonarQube e corrigir a issue encontrada
+- **Ferramenta:** Claude Code (Anthropic), modelo Claude Opus 5.5
+- **Prompt/instrução:** Foram fornecidos à IA o guia da Entrega 2, o PDF com as instruções da professora e o Plano de Teste do grupo. Foi solicitado ampliar os testes de forma a cobrir todos os ramos da classe, isolando as dependências com Mockito, e seguir os padrões já usados no repositório. Também foi definido que nenhuma alteração seria commitada sem revisão manual, que mudanças no `pom.xml` não poderiam afetar a configuração da `CartaoLancamentoService` e que correções no código de produção ficariam em commit separado dos testes.
+- **Resultado:** A IA propôs 13 novos casos (CT06 a CT18), cobrindo os ramos que os testes da Entrega 1 não alcançavam (Registro 5): duplicidade de username e de pessoa, criptografia da senha, erro na atualização, `addGrupo` com grupo existente e o método `removeGrupo` inteiro. O caso CT17 confirmou o problema da comparação de `Long` com `==` levantado no Registro 6: com códigos acima de 127, o grupo não era removido. Também identificou que o PIT executava 0 testes por falta do `pitest-junit5-plugin` e que, com `-DforkCount=0`, o JaCoCo não registra cobertura.
+- **Decisão:**
+  - Os testes propostos foram mantidos sem alterações após a revisão. Nos novos casos foram usados objetos reais em vez de mocks, para verificar os valores gravados pelo serviço.
+  - O CT17 foi mantido falhando até a correção, como evidência do defeito.
+  - O outro problema levantado no Registro 6 para `removeGrupo` (remoção de elementos dentro do `for` com índice) foi descartado, pois só ocorreria com dois grupos de mesmo código na lista, o que o banco não retorna.
+  - A IA havia afirmado que a configuração do PIT poderia ser sobrescrita pela linha de comando; isso foi verificado antes de ser aceito.
+  - O SonarQube apontou apenas 1 issue. Foi rejeitada a ideia de usar um perfil de regras mais rígido só para gerar mais issues; a correção se limitou à issue apontada (`==` substituído por `.equals()`).
+- **Validação:**
+  - Antes da correção: 17 testes aprovados e o CT17 falhando. Depois da correção: `Tests run: 18, Failures: 0, Errors: 0`.
+  - JaCoCo: branches de 42% (5/12) na Entrega 1 para 100% (12/12). A primeira medição com `-DforkCount=0` apresentou um valor incorreto, o que levou à identificação do problema.
+  - PIT: de 44% (8/18) na Entrega 1 para 100% (18/18). Os dois mutantes que sobreviviam na Entrega 1 (remoção da data de cadastro e da senha criptografada) mostraram que linhas cobertas não eram verificadas.
+  - O PIT da `CartaoLancamentoService` foi executado com e sem o novo plugin, com o mesmo resultado (95%).
+  - SonarQube: 1 issue (`java:S4973`) antes e 0 issues depois, com a complexidade ciclomática 11 confirmada.
+  - Versão inicial e versão final dos testes unitários são idênticas.
+
+## Registro 10 - Testes de integração da UsuarioService (Entrega 2)
+
+- **Responsável:** Paulo Carrano
+- **Atividade:** Implementar testes de integração da `UsuarioService`
+- **Ferramenta:** Claude Code (Anthropic), modelo Claude Opus 5.5
+- **Prompt/instrução:** Solicitado à IA implementar os testes de integração seguindo o padrão já adotado no grupo (`CartaoLancamentoServiceIntegrationTest`).
+- **Resultado:** A IA apresentou duas abordagens: integrar a `UsuarioService` e a `GrupoUsuarioService` reais, com dublês apenas para os repositórios, ou executar os testes com o Spring e o banco MySQL real. Foram implementados 3 cenários: adição de grupo, adição de grupo já existente e remoção de grupo.
+- **Decisão:** Escolhida a primeira abordagem, por seguir o padrão do grupo, não depender do Docker e ser mais simples de explicar. Os métodos `cadastrar`, `lista` e `buscaUsuario` ficaram de fora, pois não utilizam a `GrupoUsuarioService`.
+- **Validação:** `Tests run: 3, Failures: 0, Errors: 0`, executado pela IA e depois pelo integrante. Versão inicial e versão final são idênticas.
+
+## Registro 11 - Teste de sistema com Selenium (cadastro de usuário)
+
+- **Responsável:** Paulo Carrano
+- **Atividade:** Implementar teste funcional de sistema com Selenium
+- **Ferramenta:** Claude Code (Anthropic), modelo Claude Opus 5.5
+- **Prompt/instrução:** Solicitado à IA um teste Selenium do cadastro de usuário, reaproveitando a `LoginPage` existente e respeitando as pré-condições conhecidas da Entrega 1: o usuário precisa de uma pessoa ainda não vinculada e o campo "Número" do endereço aceita no máximo 6 caracteres (issue #6).
+- **Resultado:** A IA mapeou as telas pelo código-fonte e pela aplicação em execução e criou o teste `UsuarioSeleniumTest` e as classes `PessoaPage` e `UsuarioPage`. O teste cadastra uma pessoa, cadastra o usuário vinculado e confere a mensagem de sucesso e a listagem. Gera dados únicos a cada execução, pois o sistema não aceita CPF nem username repetidos.
+- **Decisão:** A primeira versão falhou e foi corrigida em duas etapas:
+  1. O teste abria a tela de pessoa antes de o login terminar, voltando à tela de login. A primeira tentativa da IA (esperar o formulário carregar) não resolveu; com uma pausa temporária de diagnóstico, foi identificada a causa, e a solução adotada foi aguardar a URL sair de `/login`, sem alterar a `LoginPage` existente.
+  2. O cadastro de pessoa falhou com `Unparseable date: ""`, pois a data de nascimento, opcional na tela, é obrigatória no servidor. O teste passou a preencher a data.
+
+  Atualizar o Selenium para a versão 4 (que baixa o ChromeDriver automaticamente) foi descartado, por alterar a configuração usada pelos testes da Maria. O teste não funcional, opcional, não foi implementado.
+- **Validação:** Executado 3 vezes seguidas com dados novos: `Tests run: 1, Failures: 0, Errors: 0`. Ao consultar o banco, verificou-se que a data `01/01/1990` foi gravada como `0013-06-06`: o datepicker e o servidor usam formatos de data diferentes. O defeito foi registrado na issue #23. As versões iniciais dos arquivos alterados estão em `docs/ai/paulo-entrega2/`.
