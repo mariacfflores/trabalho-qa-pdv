@@ -91,7 +91,7 @@ public class UsuarioService {
 		todosGrupos = grupos.buscaGrupos(usuario);
 
 		for (int i = 0; i < todosGrupos.size(); i++) {
-			if (todosGrupos.get(i).getCodigo() == gruposUsu.getCodigo()) {
+			if (todosGrupos.get(i).getCodigo().equals(gruposUsu.getCodigo())) {
 				todosGrupos.remove(i);
 			}
 		}

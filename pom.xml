@@ -241,6 +241,15 @@
                 <artifactId>pitest-maven</artifactId>
                 <version>1.9.11</version>
 
+                <dependencies>
+                    <!-- Permite ao PIT executar testes JUnit 5 (ex.: UsuarioServiceTest) -->
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                </dependencies>
+
                 <configuration>
 
                     <targetClasses>
