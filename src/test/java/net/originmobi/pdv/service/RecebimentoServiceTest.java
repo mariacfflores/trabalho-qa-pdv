@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -253,7 +254,7 @@ public class RecebimentoServiceTest {
 		assertEquals(0.0, captor.getValue().getValor_total());
 	}
 
-	// ===================== Testes do método receber =====================
+	//Testes do método receber
 
 	@AfterEach
 	void limparUsuarioLogado() {
@@ -275,7 +276,6 @@ public class RecebimentoServiceTest {
 		return titulo;
 	}
 
-	// Cria um recebimento aberto (sem data de processamento)
 	private Recebimento criarRecebimentoAberto(Double valorTotal) {
 		Recebimento recebimento = new Recebimento();
 		recebimento.setValor_total(valorTotal);
@@ -364,7 +364,6 @@ public class RecebimentoServiceTest {
 
 		Recebimento recebimento = criarRecebimentoAberto(110.0);
 
-		// Duas parcelas: 50 + 60
 		Parcela parcela1 = mock(Parcela.class);
 		when(parcela1.getValor_restante()).thenReturn(50.0);
 		when(parcela1.getCodigo()).thenReturn(1L);
@@ -387,15 +386,12 @@ public class RecebimentoServiceTest {
 
 		assertEquals("Recebimento realizado com sucesso", resultado);
 
-		// Cada parcela é quitada com o seu valor
 		verify(parcelas).receber(1L, 50.0, 0.00, 0.00);
 		verify(parcelas).receber(2L, 60.0, 0.00, 0.00);
 
-		// Lança no caixa e não no cartão
 		verify(lancamentos).lancamento(any(CaixaLancamento.class));
 		verify(cartaoLancamentos, never()).lancamento(anyDouble(), any());
 
-		// Recebimento salvo como fechado com o valor recebido
 		verify(recebimentos).save(recebimento);
 		assertEquals(110.0, recebimento.getValor_recebido());
 		assertNotNull(recebimento.getData_processamento());
@@ -420,11 +416,10 @@ public class RecebimentoServiceTest {
 		when(receParcelas.parcelasDoReceber(1L)).thenReturn(lista);
 		when(caixas.caixaAberto()).thenReturn(Optional.of(mock(Caixa.class)));
 
-		// Recebe 30, menos que a primeira parcela
 		recebimentoService.receber(1L, 30.0, 0.0, 0.0, 5L);
 
 		verify(parcelas).receber(1L, 30.0, 0.00, 0.00);
-		// A segunda parcela não recebe nada
+	
 		verify(parcelas, never()).receber(eq(2L), anyDouble(), anyDouble(), anyDouble());
 	}
 
@@ -452,6 +447,48 @@ public class RecebimentoServiceTest {
 		verify(cartaoLancamentos).lancamento(100.0, titulo);
 		verify(lancamentos, never()).lancamento(any());
 		verify(caixas, never()).caixaAberto();
+	}
+
+	//Testes do método remover
+
+	@Test
+	void deveRemoverRecebimentoAberto() {
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(criarRecebimentoAberto(100.0)));
+
+		String resultado = recebimentoService.remover(1L);
+
+		assertEquals("removido com sucesso", resultado);
+
+		verify(recebimentos).deleteById(1L);
+	}
+
+	@Test
+	void deveRecusarRemoverRecebimentoProcessado() {
+		Recebimento recebimento = criarRecebimentoAberto(100.0);
+		recebimento.setData_processamento(new Timestamp(System.currentTimeMillis()));
+
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(recebimento));
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.remover(1L);
+		});
+
+		assertEquals("Esse recebimento não pode ser removido, pois ele já esta processado", exception.getMessage());
+
+		verify(recebimentos, never()).deleteById(any());
+	}
+
+	@Test
+	void deveRetornarErroQuandoFalharAoRemover() {
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(criarRecebimentoAberto(100.0)));
+
+		doThrow(new RuntimeException("erro no banco")).when(recebimentos).deleteById(1L);
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.remover(1L);
+		});
+
+		assertEquals("Erro ao remover orçamento, chame o suporte", exception.getMessage());
 	}
 
 }
