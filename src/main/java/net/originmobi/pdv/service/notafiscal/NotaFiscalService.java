@@ -1,7 +1,6 @@
 package net.originmobi.pdv.service.notafiscal;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -42,6 +41,10 @@ public class NotaFiscalService {
 
 	@Autowired
 	private PessoaService pessoas;
+
+	// O valor padrão mantém os usos existentes de new NotaFiscalService() no gerador.
+	@Autowired
+	private RecursosXmlNfe recursosXml = new RecursosXmlNfe();
 
 	private LocalDate dataAtual;
 
@@ -131,7 +134,7 @@ public class NotaFiscalService {
 		String contexto = "";
 
 		try {
-			contexto = new File(".").getCanonicalPath();
+			contexto = recursosXml.contexto();
 		} catch (Exception e) {
 			System.out.println("Erro ao pegar o contexto " + e);
 		}
@@ -139,7 +142,7 @@ public class NotaFiscalService {
 		DIRETORIO = Paths.get(contexto + CAMINHO_XML);
 
 		try {
-			PrintWriter out = new PrintWriter(new FileWriter(DIRETORIO.toString() + "/" + chaveNfe + ".xml"));
+			PrintWriter out = recursosXml.abrirEscritor(DIRETORIO.toString() + "/" + chaveNfe + ".xml");
 			out.write(xml);
 			out.close();
 			System.out.println("Arquivo gravado com sucesso em " + DIRETORIO.toString());
@@ -156,13 +159,13 @@ public class NotaFiscalService {
 		String contexto = "";
 
 		try {
-			contexto = new File(".").getCanonicalPath();
+			contexto = recursosXml.contexto();
 		} catch (Exception e) {
 			System.out.println("Erro ao pegar o contexto " + e);
 		}
 
 		try {
-			File file = new File(contexto + CAMINHO_XML + "/" + chave_acesso + ".xml");
+			File file = recursosXml.arquivo(contexto + CAMINHO_XML + "/" + chave_acesso + ".xml");
 			System.out.println("XML para deletar " + file.toString());
 			if (file.exists())
 				file.delete();
@@ -176,7 +179,7 @@ public class NotaFiscalService {
 	}
 
 	public void emitir(NotaFiscal notaFiscal) {
-		GeraXmlNfe geraXmlNfe = new GeraXmlNfe();
+		GeraXmlNfe geraXmlNfe = recursosXml.criarGerador();
 
 		// gera o xml e pega a chave de acesso do mesmo
 		String chaveNfe = geraXmlNfe.gerarXML(notaFiscal);
