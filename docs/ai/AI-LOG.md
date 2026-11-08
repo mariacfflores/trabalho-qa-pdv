@@ -214,4 +214,5 @@ Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os
   2. O cadastro de pessoa falhou com `Unparseable date: ""`, pois a data de nascimento, opcional na tela, é obrigatória no servidor. O teste passou a preencher a data.
 
   Atualizar o Selenium para a versão 4 (que baixa o ChromeDriver automaticamente) foi descartado, por alterar a configuração usada pelos testes da Maria. O teste não funcional, opcional, não foi implementado.
+
 - **Validação:** Executado 3 vezes seguidas com dados novos: `Tests run: 1, Failures: 0, Errors: 0`. Ao consultar o banco, verificou-se que a data `01/01/1990` foi gravada como `0013-06-06`: o datepicker e o servidor usam formatos de data diferentes. O defeito foi registrado na issue #23. As versões iniciais dos arquivos alterados estão em `docs/ai/paulo-entrega2/`.

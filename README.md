@@ -64,9 +64,9 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
 
-[Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0) 
+[Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
 
-[Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing) 
+[Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing)
 
 [Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0)
 
@@ -76,12 +76,12 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
 
-| Classe                       | Complexidade ciclomática | Responsável          |
-| ---------------------------- | -----------------------: | -------------------- |
-| RecebimentoService.java      |                       20 | Caio Lima            |
-| NotaFiscalService.java       |                       16 | Rafael Valverde      |
-| CartaoLancamentoService.java |                       14 | Maria Clara Flores   |
-| UsuarioService.java          |                       11 | Paulo Cesar Carrano  |
+| Classe                       | Complexidade ciclomática | Responsável         |
+| ---------------------------- | -----------------------: | ------------------- |
+| RecebimentoService.java      |                       20 | Caio Lima           |
+| NotaFiscalService.java       |                       16 | Rafael Valverde     |
+| CartaoLancamentoService.java |                       14 | Maria Clara Flores  |
+| UsuarioService.java          |                       11 | Paulo Cesar Carrano |
 
 Todas as classes selecionadas apresentam complexidade ciclomática maior ou igual a 10.
 
@@ -193,7 +193,7 @@ Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de su
 | CT-USU-02 | Cadastro com `user` já existente                | Passou    |
 | CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou    |
 
-O arquivo gerado no Testlink relativo ao caso de teste 01 foi adicionado na pasta de [testes_manuais](https://github.com/mariacfflores/trabalho-qa-pdv/tree/master/docs/testes_manuais) 
+O arquivo gerado no Testlink relativo ao caso de teste 01 foi adicionado na pasta de [testes_manuais](https://github.com/mariacfflores/trabalho-qa-pdv/tree/master/docs/testes_manuais)
 
 Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
 
@@ -217,9 +217,9 @@ mvn test -Dtest=RecebimentoServiceTest
 
 Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
 
-| ID               | Cenário                                     | Resultado |
-| ---------------- | -------------------------------------------- | --------- |
-| PDVQA: PDV - QA  | Realizar recebimento de título com desconto | Falhado   |
+| ID              | Cenário                                     | Resultado |
+| --------------- | ------------------------------------------- | --------- |
+| PDVQA: PDV - QA | Realizar recebimento de título com desconto | Falhado   |
 
 Durante a execução, foi identificado um defeito na tela de pagamento da venda: o campo "Titulo" não é preenchido com nenhuma opção após a seleção da Forma de Pagamento, impedindo a conclusão do pagamento e gerando um erro não tratado ("Zero length string"). Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/9).
 
@@ -321,10 +321,10 @@ A cobertura estrutural da `CartaoLancamentoService` foi medida utilizando o JaCo
 
 Resultados obtidos:
 
-| Métrica | Resultado |
-| ------- | --------: |
-| Cobertura de instruções | 98% |
-| Cobertura de branches | 90% |
+| Métrica                 | Resultado |
+| ----------------------- | --------: |
+| Cobertura de instruções |       98% |
+| Cobertura de branches   |       90% |
 
 A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
 
@@ -340,12 +340,12 @@ O PIT Mutation Testing foi executado sobre a mesma classe utilizada para a anál
 
 Resultados:
 
-| Métrica | Resultado |
-| ------- | --------: |
-| Mutações geradas | 22 |
-| Mutações eliminadas | 20 |
-| Mutation Coverage | 91% |
-| Test Strength | 95% |
+| Métrica             | Resultado |
+| ------------------- | --------: |
+| Mutações geradas    |        22 |
+| Mutações eliminadas |        20 |
+| Mutation Coverage   |       91% |
+| Test Strength       |       95% |
 
 O escore de mutação obtido superou a meta mínima de **80%**.
 
@@ -621,6 +621,225 @@ Seção destinada aos artefatos da Entrega 2 relacionados à `NotaFiscalService`
 
 **Responsável:** Rafael Valverde.
 
+## Testes unitários
+
+Os testes unitários da `NotaFiscalService` foram ampliados de **11 para 25 casos de teste**.
+
+As dependências foram isoladas com mocks:
+
+- `NotaFiscalRepository`;
+- `EmpresaService`;
+- `PessoaService`;
+- `NotaFiscalTotaisServer`;
+- `RecursosXmlNfe`, gerador `GeraXmlNfe`, arquivo e escritor utilizados nas operações de XML.
+
+A classe `RecursosXmlNfe` foi introduzida para fornecer os recursos externos ao serviço e permitir sua substituição nos testes. Assim, os testes unitários não gravam nem excluem arquivos reais e não utilizam certificados ou SEFAZ. O relógio usado no cadastro continua real; a data é verificada entre os instantes anteriores e posteriores à chamada.
+
+Arquivo: [NotaFiscalServiceTest.java](src/test/java/net/originmobi/pdv/service/notafiscal/NotaFiscalServiceTest.java).
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceTest"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Testes de integração
+
+Foram implementados **5 testes de integração entre serviços**.
+
+Os cenários são:
+
+- Cadastro válido, verificando a transferência dos dados entre os serviços e a associação dos totais à nota;
+- Empresa inexistente;
+- Destinatário inexistente;
+- Falha propagada pelo serviço de totais, impedindo o cadastro da nota;
+- Falha ao salvar a nota após a chamada ao serviço de totais.
+
+Arquivo: [NotaFiscalServiceIntegrationTest.java](src/test/java/net/originmobi/pdv/service/notafiscal/NotaFiscalServiceIntegrationTest.java).
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceIntegrationTest" "-Djacoco.skip=true"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Cobertura estrutural — JaCoCo
+
+A cobertura da `NotaFiscalService` foi medida executando apenas sua suíte unitária.
+
+| Métrica                 |      Resultado |
+| ----------------------- | -------------: |
+| Cobertura de instruções | 100% (402/402) |
+| Cobertura de branches   |   100% (16/16) |
+| Cobertura de linhas     |   100% (82/82) |
+
+A cobertura de branches supera a meta mínima de **80%**.
+
+Evidência armazenada em: [cobertura da NotaFiscalService](docs/evidencias/cobertura/jacoco_notafiscalservice_cobertura.png).
+
+## Teste baseado em defeitos — PIT Mutation Testing
+
+O PIT foi executado sobre a mesma classe da análise estrutural.
+
+| Métrica                | Resultado |
+| ---------------------- | --------: |
+| Mutações geradas       |        34 |
+| Mutações eliminadas    |        28 |
+| Mutation Coverage      |    82,35% |
+| Mutantes sem cobertura |         0 |
+| Test Strength          |    82,35% |
+
+O escore de mutação superou a meta de **80%**.
+
+Evidência versionada: [mutação da NotaFiscalService](docs/evidencias/mutacao/pit_notafiscalservice_mutacao.png).
+
+## Teste funcional Selenium — cadastro e consulta de nota fiscal
+
+Foram implementados **3 cenários funcionais** com Selenium:
+
+1. Cadastrar uma nota de saída, verificar número, modelo, série e tipo na listagem e reabri-la para conferir natureza e destinatário;
+2. Rejeitar natureza vazia com a mensagem esperada, sem adicionar uma nota;
+3. Rejeitar destinatário vazio com a mensagem esperada, sem adicionar uma nota.
+
+Arquivos:
+
+- [NotaFiscalSeleniumTest.java](src/test/java/net/originmobi/pdv/selenium/NotaFiscalSeleniumTest.java);
+- [NotaFiscalPage.java](src/test/java/net/originmobi/pdv/selenium/page/NotaFiscalPage.java);
+- [NotaFiscalSeleniumSupport.java](src/test/java/net/originmobi/pdv/selenium/NotaFiscalSeleniumSupport.java).
+
+### Pré-condições
+
+- Aplicação e banco disponíveis em ambiente de teste, por padrão em `http://localhost:8080`.
+- ChromeDriver compatível com o Chrome em `drivers/chromedriver.exe`, conforme [Configuração do ChromeDriver](#configuração-do-chromedriver).
+- Usuário com acesso às notas fiscais; o padrão é `gerente`, senha `123`.
+- Empresa cadastrada com série maior que zero e ambiente de homologação.
+- Destinatário existente; o código padrão é `1`.
+
+Para executar:
+
+```powershell
+mvn test "-Dtest=NotaFiscalSeleniumTest" "-Djacoco.skip=true"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+## Teste não funcional Selenium — segurança
+
+O requisito verifica a exigência de autenticação. Um teste parametrizado executa **2 casos**, acessando `/notafiscal` e `/notafiscal/form` em um navegador sem sessão autenticada.
+
+Em ambos, verifica o redirecionamento para `/login`, a exibição dos campos de autenticação e a ausência do formulário fiscal e do link de criação de nota. O escopo é acesso anônimo; não representa uma auditoria completa de segurança nem valida permissões entre perfis autenticados.
+
+Arquivo: [NotaFiscalSegurancaSeleniumTest.java](src/test/java/net/originmobi/pdv/selenium/NotaFiscalSegurancaSeleniumTest.java).
+
+Para executar, com a aplicação disponível:
+
+```powershell
+mvn test "-Dtest=NotaFiscalSegurancaSeleniumTest" "-Djacoco.skip=true"
+```
+
+Resultado obtido:
+
+```text
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+O endereço, usuário, senha e destinatário podem ser definidos por `selenium.baseUrl`, `selenium.usuario`, `selenium.senha` e `selenium.destinatario`. Exemplo para outra porta: `"-Dselenium.baseUrl=http://localhost:18080"`.
+
+Os resultados ficam em `target/surefire-reports/` e as capturas em `target/selenium-evidencias/notafiscal/`. Esses arquivos são apagados por `mvn clean`.
+
+## Inspeção estática — SonarQube
+
+[ESPERANDO AULA DO DIA 9/11]
+
+### Antes da correção
+
+[ESPERANDO AULA DO DIA 9/11]
+
+### Depois da correção
+
+[ESPERANDO AULA DO DIA 9/11]
+
+## Observação sobre a execução de `mvn test`
+
+A execução sem filtro também inclui testes de outras classes, `PdvApplicationTests.contextLoads` e Selenium, que podem exigir banco e aplicação ativos. Para validar apenas as suítes unitária e de integração da nota fiscal:
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceTest,NotaFiscalServiceIntegrationTest" "-Djacoco.skip=true"
+```
+
+São **30 casos** nessas duas suítes. Os cinco casos Selenium devem ser executados separadamente com as pré-condições descritas acima. Para medir cobertura, utilizar o comando específico do JaCoCo nesta seção, sem `jacoco.skip=true`.
+
+## Comandos para execução individual
+
+Execute os comandos na raiz do projeto.
+
+**Testes unitários:**
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceTest" "-Djacoco.skip=true"
+```
+
+**Testes de integração:**
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceIntegrationTest" "-Djacoco.skip=true"
+```
+
+**Testes funcionais Selenium** — com a aplicação em execução e as pré-condições preparadas:
+
+```powershell
+mvn test "-Dtest=NotaFiscalSeleniumTest" "-Djacoco.skip=true"
+```
+
+**Teste não funcional Selenium — segurança** — com a aplicação em execução:
+
+```powershell
+mvn test "-Dtest=NotaFiscalSegurancaSeleniumTest" "-Djacoco.skip=true"
+```
+
+**Cobertura estrutural — JaCoCo:**
+
+```powershell
+mvn test "-Dtest=NotaFiscalServiceTest" "-Djacoco.destFile=target/jacoco-notafiscal.exec" "-Djacoco.dataFile=target/jacoco-notafiscal.exec" "-Djacoco.append=false"
+```
+
+**Teste de mutação — PIT:**
+
+```powershell
+mvn test-compile org.pitest:pitest-maven:mutationCoverage "-DtargetClasses=net.originmobi.pdv.service.notafiscal.NotaFiscalService" "-DtargetTests=net.originmobi.pdv.service.notafiscal.NotaFiscalServiceTest" "-DreportsDirectory=target/pit-reports-notafiscal"
+```
+
+**Onde encontrar os resultados:**
+
+Os caminhos abaixo são relativos à raiz do projeto. Abra os arquivos HTML no navegador após executar os comandos:
+
+- **JaCoCo — resumo:** `target/site/jacoco/index.html`.
+- **JaCoCo — detalhes da NotaFiscalService:** `target/site/jacoco/net.originmobi.pdv.service.notafiscal/NotaFiscalService.html`.
+- **PIT — relatório de mutação:** `target/pit-reports-notafiscal/index.html`.
+- **PIT — detalhes em XML:** `target/pit-reports-notafiscal/mutations.xml`.
+
+Os relatórios em `target` são apagados ao executar `mvn clean`.
+
 ---
 
 # Classe UsuarioService.java — Entrega 2
@@ -706,10 +925,10 @@ A cobertura estrutural da `UsuarioService` foi medida utilizando o JaCoCo.
 
 Resultados obtidos:
 
-| Métrica | Entrega 1 | Entrega 2 |
-| ------- | --------: | --------: |
-| Cobertura de instruções | 60% | 100% |
-| Cobertura de branches | 42% (5/12) | 100% (12/12) |
+| Métrica                 |  Entrega 1 |    Entrega 2 |
+| ----------------------- | ---------: | -----------: |
+| Cobertura de instruções |        60% |         100% |
+| Cobertura de branches   | 42% (5/12) | 100% (12/12) |
 
 A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
 
@@ -737,12 +956,12 @@ Como os testes da `UsuarioService` utilizam JUnit 5, foi adicionado ao `pom.xml`
 
 Resultados:
 
-| Métrica | Entrega 1 | Entrega 2 |
-| ------- | --------: | --------: |
-| Mutações geradas | 18 | 18 |
-| Mutações eliminadas | 8 | 18 |
-| Mutation Coverage | 44% | 100% |
-| Test Strength | — | 100% |
+| Métrica             | Entrega 1 | Entrega 2 |
+| ------------------- | --------: | --------: |
+| Mutações geradas    |        18 |        18 |
+| Mutações eliminadas |         8 |        18 |
+| Mutation Coverage   |       44% |      100% |
+| Test Strength       |         — |      100% |
 
 O escore de mutação obtido superou a meta mínima de **80%**.
 
