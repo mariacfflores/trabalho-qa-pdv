@@ -64,9 +64,9 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
 
-[Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0) 
+[Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
 
-[Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing) 
+[Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing)
 
 [Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0)
 
@@ -76,12 +76,12 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
 
-| Classe                       | Complexidade ciclomática | Responsável          |
-| ---------------------------- | -----------------------: | -------------------- |
-| RecebimentoService.java      |                       20 | Caio Lima            |
-| NotaFiscalService.java       |                       16 | Rafael Valverde      |
-| CartaoLancamentoService.java |                       14 | Maria Clara Flores   |
-| UsuarioService.java          |                       11 | Paulo Cesar Carrano  |
+| Classe                       | Complexidade ciclomática | Responsável         |
+| ---------------------------- | -----------------------: | ------------------- |
+| RecebimentoService.java      |                       20 | Caio Lima           |
+| NotaFiscalService.java       |                       16 | Rafael Valverde     |
+| CartaoLancamentoService.java |                       14 | Maria Clara Flores  |
+| UsuarioService.java          |                       11 | Paulo Cesar Carrano |
 
 Todas as classes selecionadas apresentam complexidade ciclomática maior ou igual a 10.
 
@@ -193,7 +193,7 @@ Casos de teste da funcionalidade de cadastro de usuário, cobrindo o fluxo de su
 | CT-USU-02 | Cadastro com `user` já existente                | Passou    |
 | CT-USU-03 | Cadastro de pessoa já vinculada a outro usuário | Passou    |
 
-O arquivo gerado no Testlink relativo ao caso de teste 01 foi adicionado na pasta de [testes_manuais](https://github.com/mariacfflores/trabalho-qa-pdv/tree/master/docs/testes_manuais) 
+O arquivo gerado no Testlink relativo ao caso de teste 01 foi adicionado na pasta de [testes_manuais](https://github.com/mariacfflores/trabalho-qa-pdv/tree/master/docs/testes_manuais)
 
 Durante a execução, foi identificado um defeito no cadastro de pessoa: o campo `Número` do endereço aceita entrada maior do que o limite da coluna no banco (`VARCHAR(6)`), causando erro 500 mascarado por tratamento de exceção genérico. Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/6).
 
@@ -217,9 +217,9 @@ mvn test -Dtest=RecebimentoServiceTest
 
 Caso de teste manual executado no TestLink, cobrindo o fluxo de criação de pedido, geração de venda e recebimento de título com desconto.
 
-| ID               | Cenário                                     | Resultado |
-| ---------------- | -------------------------------------------- | --------- |
-| PDVQA: PDV - QA  | Realizar recebimento de título com desconto | Falhado   |
+| ID              | Cenário                                     | Resultado |
+| --------------- | ------------------------------------------- | --------- |
+| PDVQA: PDV - QA | Realizar recebimento de título com desconto | Falhado   |
 
 Durante a execução, foi identificado um defeito na tela de pagamento da venda: o campo "Titulo" não é preenchido com nenhuma opção após a seleção da Forma de Pagamento, impedindo a conclusão do pagamento e gerando um erro não tratado ("Zero length string"). Detalhes na issue: [Github Issue](https://github.com/mariacfflores/trabalho-qa-pdv/issues/9).
 
@@ -321,10 +321,10 @@ A cobertura estrutural da `CartaoLancamentoService` foi medida utilizando o JaCo
 
 Resultados obtidos:
 
-| Métrica | Resultado |
-| ------- | --------: |
-| Cobertura de instruções | 98% |
-| Cobertura de branches | 90% |
+| Métrica                 | Resultado |
+| ----------------------- | --------: |
+| Cobertura de instruções |       98% |
+| Cobertura de branches   |       90% |
 
 A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
 
@@ -340,12 +340,12 @@ O PIT Mutation Testing foi executado sobre a mesma classe utilizada para a anál
 
 Resultados:
 
-| Métrica | Resultado |
-| ------- | --------: |
-| Mutações geradas | 22 |
-| Mutações eliminadas | 20 |
-| Mutation Coverage | 91% |
-| Test Strength | 95% |
+| Métrica             | Resultado |
+| ------------------- | --------: |
+| Mutações geradas    |        22 |
+| Mutações eliminadas |        20 |
+| Mutation Coverage   |       91% |
+| Test Strength       |       95% |
 
 O escore de mutação obtido superou a meta mínima de **80%**.
 
@@ -706,10 +706,10 @@ A cobertura estrutural da `UsuarioService` foi medida utilizando o JaCoCo.
 
 Resultados obtidos:
 
-| Métrica | Entrega 1 | Entrega 2 |
-| ------- | --------: | --------: |
-| Cobertura de instruções | 60% | 100% |
-| Cobertura de branches | 42% (5/12) | 100% (12/12) |
+| Métrica                 |  Entrega 1 |    Entrega 2 |
+| ----------------------- | ---------: | -----------: |
+| Cobertura de instruções |        60% |         100% |
+| Cobertura de branches   | 42% (5/12) | 100% (12/12) |
 
 A cobertura de branches superou a meta mínima de **80%** estabelecida para o critério de todas-arestas.
 
@@ -737,12 +737,12 @@ Como os testes da `UsuarioService` utilizam JUnit 5, foi adicionado ao `pom.xml`
 
 Resultados:
 
-| Métrica | Entrega 1 | Entrega 2 |
-| ------- | --------: | --------: |
-| Mutações geradas | 18 | 18 |
-| Mutações eliminadas | 8 | 18 |
-| Mutation Coverage | 44% | 100% |
-| Test Strength | — | 100% |
+| Métrica             | Entrega 1 | Entrega 2 |
+| ------------------- | --------: | --------: |
+| Mutações geradas    |        18 |        18 |
+| Mutações eliminadas |         8 |        18 |
+| Mutation Coverage   |       44% |      100% |
+| Test Strength       |         — |      100% |
 
 O escore de mutação obtido superou a meta mínima de **80%**.
 
