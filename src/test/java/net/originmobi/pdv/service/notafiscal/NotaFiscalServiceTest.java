@@ -2,7 +2,10 @@ package net.originmobi.pdv.service.notafiscal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,11 +14,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -119,7 +126,7 @@ public class NotaFiscalServiceTest {
 		assertEquals(5, resultado);
 	}
 	
-	@DisplayName("Teste que tem que retornar zero quando o resto for zero ou um")
+	@DisplayName("Retorna zero quando o resto da divisão é zero")
 	@Test
 	void deveRetornarZeroQuandoRestoForZeroOuUm() {
 		Integer resultado = notaFiscalService.geraDV("123456");
@@ -186,6 +193,103 @@ public class NotaFiscalServiceTest {
 		assertEquals("Não existe série cadastrada para o modelo 55, verifique", exception.getMessage());
 		verify(notaTotais, never()).cadastro(any(NotaFiscalTotais.class));
 		verify(notasFiscais, never()).save(any(NotaFiscal.class));
+	}
+
+	@ParameterizedTest(name = "Código {0} deve produzir DV {1}")
+	@CsvSource({"0, 0", "6, 0", "1, 9", "12345678, 9", "123456789, 7"})
+	void deveCalcularDigitoNosLimitesDosPesos(String codigo, int esperado) {
+		// Somas independentes: 0, 12, 2, 156 e 202; pesos aplicados da direita para a esquerda.
+		assertEquals(Integer.valueOf(esperado), notaFiscalService.geraDV(codigo));
+	}
+
+	@Test
+	void deveCadastrarNotaComDadosETotaisIniciais() {
+		Empresa empresa = prepararCadastroValido();
+		Pessoa destinatario = pessoas.buscaPessoa(1L).get();
+		when(notasFiscais.buscaUltimaNota(3)).thenReturn(42L);
+		when(notasFiscais.save(any(NotaFiscal.class))).thenAnswer(invocacao -> {
+			NotaFiscal nota = invocacao.getArgument(0);
+			nota.setCodigo(100L);
+			return nota;
+		});
+
+		LocalDate antes = LocalDate.now();
+		String resultado = notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
+		LocalDate depois = LocalDate.now();
+
+		assertEquals("100", resultado);
+		ArgumentCaptor<NotaFiscal> captor = ArgumentCaptor.forClass(NotaFiscal.class);
+		verify(notasFiscais).save(captor.capture());
+		NotaFiscal nota = captor.getValue();
+		assertEquals(Long.valueOf(42), nota.getNumero());
+		assertEquals(55, nota.getModelo());
+		assertEquals(3, nota.getSerie());
+		assertEquals(NotaFiscalTipo.SAIDA, nota.getTipo());
+		assertEquals("Venda", nota.getNatureza_operacao());
+		assertSame(empresa, nota.getEmissor());
+		assertSame(destinatario, nota.getDestinatario());
+		assertEquals(1, nota.getTipo_emissao());
+		assertEquals(2, nota.getTipo_ambiente());
+		assertEquals("0.0.1-beta", nota.getVerProc());
+		assertEquals(Long.valueOf(4), nota.getFreteTipo().getCodigo());
+		assertEquals(Long.valueOf(1), nota.getFinalidade().getCodigo());
+		// Aceita a virada de dia sem alterar ou simular o relógio global.
+		LocalDate cadastro = nota.getData_cadastro().toLocalDate();
+		assertTrue(!cadastro.isBefore(antes) && !cadastro.isAfter(depois));
+		ArgumentCaptor<NotaFiscalTotais> totaisCaptor = ArgumentCaptor.forClass(NotaFiscalTotais.class);
+		verify(notaTotais).cadastro(totaisCaptor.capture());
+		NotaFiscalTotais totais = totaisCaptor.getValue();
+		assertSame(totais, nota.getTotais());
+		assertEquals(Collections.nCopies(13, 0.0), Arrays.asList(totais.getV_bc(), totais.getV_icms(),
+				totais.getV_st(), totais.getV_prod(), totais.getV_frete(), totais.getV_seg(),
+				totais.getV_desc(), totais.getV_ii(), totais.getV_ipi(), totais.getV_pis(),
+				totais.getV_cofins(), totais.getV_outros(), totais.getV_nf()));
+		verify(notasFiscais).buscaUltimaNota(3);
+	}
+
+	@Test
+	void deveInterromperCadastroQuandoTotaisFalharem() {
+		prepararCadastroValido();
+		when(notaTotais.cadastro(any(NotaFiscalTotais.class))).thenThrow(new RuntimeException("Falha simulada"));
+		verificarErroDeCadastro();
+		verify(notasFiscais, never()).buscaUltimaNota(anyInt());
+		verify(notasFiscais, never()).save(any(NotaFiscal.class));
+	}
+
+	@Test
+	void deveInterromperCadastroQuandoConsultaDoNumeroFalhar() {
+		prepararCadastroValido();
+		when(notasFiscais.buscaUltimaNota(3)).thenThrow(new RuntimeException("Falha simulada"));
+		verificarErroDeCadastro();
+		verify(notaTotais).cadastro(any(NotaFiscalTotais.class));
+		verify(notasFiscais, never()).save(any(NotaFiscal.class));
+	}
+
+	@Test
+	void deveInformarErroQuandoPersistenciaDaNotaFalhar() {
+		prepararCadastroValido();
+		when(notasFiscais.buscaUltimaNota(3)).thenReturn(42L);
+		when(notasFiscais.save(any(NotaFiscal.class))).thenThrow(new RuntimeException("Falha simulada"));
+		verificarErroDeCadastro();
+		verify(notaTotais).cadastro(any(NotaFiscalTotais.class));
+		verify(notasFiscais).save(any(NotaFiscal.class));
+	}
+
+	private Empresa prepararCadastroValido() {
+		EmpresaParametro parametro = new EmpresaParametro();
+		parametro.setSerie_nfe(3);
+		parametro.setAmbiente(2);
+		Empresa empresa = new Empresa();
+		empresa.setParametro(parametro);
+		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.of(empresa));
+		when(pessoas.buscaPessoa(1L)).thenReturn(Optional.of(new Pessoa()));
+		return empresa;
+	}
+
+	private void verificarErroDeCadastro() {
+		RuntimeException erro = assertThrows(RuntimeException.class,
+				() -> notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA));
+		assertEquals("Erro ao cadastrar a nota, chame o suporte", erro.getMessage());
 	}
 
 }
