@@ -31,7 +31,7 @@ abstract class NotaFiscalSeleniumSupport {
         System.setProperty("webdriver.chrome.driver", System.getProperty("webdriver.chrome.driver", "drivers/chromedriver.exe"));
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--window-size=1440,1000");
-        if (Boolean.parseBoolean(System.getProperty("selenium.headless", "true"))) {
+        if (Boolean.parseBoolean(System.getProperty("selenium.headless", "false"))) {
             options.addArguments("--headless=new");
         }
         driver = new ChromeDriver(options);
