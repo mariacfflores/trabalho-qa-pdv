@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -382,7 +382,7 @@ public class RecebimentoServiceTest {
 		when(usuarios.buscaUsuario("gerente")).thenReturn(mock(Usuario.class));
 		when(caixas.caixaAberto()).thenReturn(Optional.of(mock(Caixa.class)));
 
-		String resultado = recebimentoService.receber(1L, 110.0, 0.0, 0.0, 5L);
+		String resultado = recebimentoService.receber(1L, 110.0, 5.0, 2.0, 5L);
 
 		assertEquals("Recebimento realizado com sucesso", resultado);
 
@@ -395,6 +395,11 @@ public class RecebimentoServiceTest {
 		verify(recebimentos).save(recebimento);
 		assertEquals(110.0, recebimento.getValor_recebido());
 		assertNotNull(recebimento.getData_processamento());
+
+		// Acréscimo, desconto e título gravados no recebimento
+		assertEquals(5.0, recebimento.getValor_acrescimo());
+		assertEquals(2.0, recebimento.getValor_desconto());
+		assertEquals("DIN", recebimento.getTitulo().getTipo().getSigla());
 	}
 
 	@Test
@@ -420,7 +425,8 @@ public class RecebimentoServiceTest {
 
 		verify(parcelas).receber(1L, 30.0, 0.00, 0.00);
 	
-		verify(parcelas, never()).receber(eq(2L), anyDouble(), anyDouble(), anyDouble());
+		// Só a primeira parcela recebe; a segunda não recebe nada
+		verify(parcelas, times(1)).receber(any(), anyDouble(), anyDouble(), anyDouble());
 	}
 
 	@Test
@@ -489,6 +495,30 @@ public class RecebimentoServiceTest {
 		});
 
 		assertEquals("Erro ao remover orçamento, chame o suporte", exception.getMessage());
+	}
+
+	@Test
+	void deveReceberSomenteAsParcelasExistentes() {
+		logarUsuario();
+
+		// Total do recebimento é 200, mas a única parcela vale 50
+		Parcela parcela1 = mock(Parcela.class);
+		when(parcela1.getValor_restante()).thenReturn(50.0);
+		when(parcela1.getCodigo()).thenReturn(1L);
+
+		List<Parcela> lista = new ArrayList<>();
+		lista.add(parcela1);
+
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(criarRecebimentoAberto(200.0)));
+		when(titulos.busca(5L)).thenReturn(Optional.of(criarTitulo("DIN")));
+		when(receParcelas.parcelasDoReceber(1L)).thenReturn(lista);
+		when(caixas.caixaAberto()).thenReturn(Optional.of(mock(Caixa.class)));
+
+		// Recebe 100: quita a parcela de 50 e sobram 50 sem parcela para receber
+		recebimentoService.receber(1L, 100.0, 0.0, 0.0, 5L);
+
+		// O laço percorre só a parcela existente
+		verify(parcelas, times(1)).receber(1L, 50.0, 0.00, 0.00);
 	}
 
 }
