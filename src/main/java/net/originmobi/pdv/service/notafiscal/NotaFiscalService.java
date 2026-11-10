@@ -7,10 +7,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,8 @@ import net.originmobi.pdv.xml.nfe.GeraXmlNfe;
 @Service
 public class NotaFiscalService {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(NotaFiscalService.class);
+
 	@Autowired
 	private NotaFiscalRepository notasFiscais;
 
@@ -46,8 +51,6 @@ public class NotaFiscalService {
 	@Autowired
 	private RecursosXmlNfe recursosXml = new RecursosXmlNfe();
 
-	private LocalDate dataAtual;
-
 	private static final String CAMINHO_XML = "/src/main/resources/xmlNfe/";
 
 	public List<NotaFiscal> lista() {
@@ -60,10 +63,10 @@ public class NotaFiscalService {
 		Optional<Pessoa> pessoa = pessoas.buscaPessoa(coddesti);
 
 		if (!empresa.isPresent())
-			throw new RuntimeException("Nenhuma empresa cadastrada, verifique");
+			throw new IllegalStateException("Nenhuma empresa cadastrada, verifique");
 
 		if (!pessoa.isPresent())
-			throw new RuntimeException("Favor, selecione o destinatário");
+			throw new IllegalArgumentException("Favor, selecione o destinatário");
 
 		// prepara informações iniciais da nota fiscal
 		FreteTipo frete = new FreteTipo();
@@ -74,11 +77,11 @@ public class NotaFiscalService {
 		int serie = empresa.map(Empresa::getParametro).get().getSerie_nfe();
 
 		if (empresa.map(Empresa::getParametro).get().getSerie_nfe() == 0)
-			throw new RuntimeException("Não existe série cadastrada para o modelo 55, verifique");
+			throw new IllegalStateException("Não existe série cadastrada para o modelo 55, verifique");
 
 		// opção 1 é emissão normal, as outras opções (2, 3, 4, 5) são para contigência
 		int tipoEmissao = 1;
-		dataAtual = LocalDate.now();
+		LocalDate dataAtual = LocalDate.now(ZoneId.systemDefault());
 		Date cadastro = Date.valueOf(dataAtual);
 		String verProc = "0.0.1-beta";
 		int tipoAmbiente = empresa.get().getParametro().getAmbiente();
@@ -103,7 +106,7 @@ public class NotaFiscalService {
 			nota = notasFiscais.save(notaFiscal);
 
 		} catch (Exception e) {
-			System.out.println("Erro " + e);
+			LOGGER.error("Erro ao cadastrar a nota fiscal", e);
 			throw new RuntimeException("Erro ao cadastrar a nota, chame o suporte");
 		}
 
@@ -130,24 +133,23 @@ public class NotaFiscalService {
 	}
 
 	public void salvaXML(String xml, String chaveNfe) {
-		Path DIRETORIO;
 		String contexto = "";
 
 		try {
 			contexto = recursosXml.contexto();
 		} catch (Exception e) {
-			System.out.println("Erro ao pegar o contexto " + e);
+			LOGGER.error("Erro ao pegar o contexto", e);
 		}
 
-		DIRETORIO = Paths.get(contexto + CAMINHO_XML);
+		Path diretorio = Paths.get(contexto + CAMINHO_XML);
 
 		try {
-			PrintWriter out = recursosXml.abrirEscritor(DIRETORIO.toString() + "/" + chaveNfe + ".xml");
+			PrintWriter out = recursosXml.abrirEscritor(diretorio.toString() + "/" + chaveNfe + ".xml");
 			out.write(xml);
 			out.close();
-			System.out.println("Arquivo gravado com sucesso em " + DIRETORIO.toString());
+			LOGGER.info("Arquivo gravado com sucesso em {}", diretorio);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error("Erro ao gravar XML", e);
 		}
 	}
 
@@ -155,22 +157,22 @@ public class NotaFiscalService {
 	 * responsável por remover o xml quando o mesmo já existe na nota que foi
 	 * regerada
 	 */
-	public void removeXml(String chave_acesso) {
+	public void removeXml(String chaveAcesso) {
 		String contexto = "";
 
 		try {
 			contexto = recursosXml.contexto();
 		} catch (Exception e) {
-			System.out.println("Erro ao pegar o contexto " + e);
+			LOGGER.error("Erro ao pegar o contexto", e);
 		}
 
 		try {
-			File file = recursosXml.arquivo(contexto + CAMINHO_XML + "/" + chave_acesso + ".xml");
-			System.out.println("XML para deletar " + file.toString());
+			File file = recursosXml.arquivo(contexto + CAMINHO_XML + "/" + chaveAcesso + ".xml");
+			LOGGER.info("XML para deletar {}", file);
 			if (file.exists())
 				file.delete();
 		} catch (Exception e) {
-			System.out.println("Erro ao deletar XML " + e);
+			LOGGER.error("Erro ao deletar XML", e);
 		}
 	}
 

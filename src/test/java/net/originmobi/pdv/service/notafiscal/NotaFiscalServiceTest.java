@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
 import java.io.File;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
@@ -29,7 +27,11 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.ResourceLock;
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.mockito.InjectMocks;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -156,7 +158,7 @@ public class NotaFiscalServiceTest {
 	void deveLancarErroQuandoNaoExistirEmpresaCadastrada() {
 		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.empty());
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+		IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
 			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
 		});
 
@@ -172,7 +174,7 @@ public class NotaFiscalServiceTest {
 		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.of(empresa));
 		when(pessoas.buscaPessoa(1L)).thenReturn(Optional.empty());
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
 			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
 		});
 
@@ -195,7 +197,7 @@ public class NotaFiscalServiceTest {
 		when(empresas.verificaEmpresaCadastrada()).thenReturn(Optional.of(empresa));
 		when(pessoas.buscaPessoa(1L)).thenReturn(Optional.of(pessoa));
 
-		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+		IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
 			notaFiscalService.cadastrar(1L, "Venda", NotaFiscalTipo.SAIDA);
 		});
 
@@ -326,22 +328,28 @@ public class NotaFiscalServiceTest {
 	}
 
 	@DisplayName("Trata a falha de abertura do XML sem usar um escritor")
-	@ResourceLock("java.lang.System.err")
 	@Test
 	void deveTratarFalhaAoAbrirXml() throws IOException {
 		when(recursosXml.contexto()).thenReturn("projeto");
 		String destino = Paths.get("projeto/src/main/resources/xmlNfe/").toString() + "/chave.xml";
 		when(recursosXml.abrirEscritor(destino)).thenThrow(new IOException("Abertura indisponível"));
 		// O contrato atual não propaga a IOException: o diagnóstico é sua única sinalização.
-		ByteArrayOutputStream diagnostico = new ByteArrayOutputStream();
-		PrintStream erroOriginal = System.err;
-		try (PrintStream captura = new PrintStream(diagnostico, true, "UTF-8")) {
-			System.setErr(captura);
+		Logger logger = (Logger) LoggerFactory.getLogger(NotaFiscalService.class);
+		ListAppender<ILoggingEvent> diagnostico = new ListAppender<>();
+		diagnostico.start();
+		logger.addAppender(diagnostico);
+		try {
 			assertDoesNotThrow(() -> notaFiscalService.salvaXML("<nfe/>", "chave"));
 		} finally {
-			System.setErr(erroOriginal);
+			logger.detachAppender(diagnostico);
+			diagnostico.stop();
 		}
-		assertTrue(diagnostico.toString("UTF-8").contains("java.io.IOException: Abertura indisponível"));
+		assertEquals(1, diagnostico.list.size());
+		ILoggingEvent evento = diagnostico.list.get(0);
+		assertEquals(Level.ERROR, evento.getLevel());
+		assertEquals("Erro ao gravar XML", evento.getFormattedMessage());
+		assertEquals(IOException.class.getName(), evento.getThrowableProxy().getClassName());
+		assertEquals("Abertura indisponível", evento.getThrowableProxy().getMessage());
 		verify(recursosXml).abrirEscritor(destino);
 		verifyNoInteractions(escritor);
 	}
