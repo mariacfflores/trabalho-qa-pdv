@@ -255,6 +255,28 @@ Evidência da execução: [`docs/testes_manuais/TestLink_CriaDespesa.pdf`](docs/
 
 As interações com IA foram registradas em [`docs/ai/AI-LOG.md`](docs/ai/AI-LOG.md)
 
+# Avaliação ISO/IEC 25010 — Sistema PDV
+
+Avaliação do grupo para o sistema PDV como um todo, na versão final do repositório, considerando as nove características de qualidade do produto da **ISO/IEC 25010:2023**.
+
+Para cada característica foi atribuído um nível de importância de 1 a 5, de "não afeta o sucesso do sistema" a "falhas podem causar danos graves", justificado por um elemento concreto do sistema. O documento também apresenta exemplos de conflito entre características.
+
+| Característica | Nível |
+| --- | :---: |
+| Adequação funcional | 5 |
+| Eficiência de desempenho | 3 |
+| Compatibilidade | 2 |
+| Capacidade de interação (usabilidade) | 4 |
+| Confiabilidade | 4 |
+| Segurança | 5 |
+| Manutenibilidade | 3 |
+| Flexibilidade (portabilidade) | 2 |
+| Segurança física (safety) | 1 |
+
+Documento completo, com as justificativas, no Google Docs: [Avaliação ISO/IEC 25010:2023 do sistema PDV](https://docs.google.com/document/d/1zPHFgf995Qx2YUlISeQhbnDIpGhzhMKM6rUGDsfpUKo/edit?usp=sharing)
+
+Cópia em PDF: [`docs/iso25010/iso25010-2023-sistema-pdv.pdf`](docs/iso25010/iso25010-2023-sistema-pdv.pdf)
+
 # Entrega 2 — Testes, Qualidade e Inspeção de Código
 
 Esta seção reúne os artefatos desenvolvidos para a Entrega 2 do trabalho.
@@ -919,6 +941,10 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
+## Técnica funcional — Classes de equivalência
+
+Os casos de teste da `UsuarioService` (unitários, de integração e manuais) foram relacionados às classes de equivalência das entradas de cada método. São 16 classes, válidas e inválidas, todas cobertas por ao menos um caso de teste. A tabela completa está no [Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0).
+
 ## Cobertura estrutural — JaCoCo
 
 A cobertura estrutural da `UsuarioService` foi medida utilizando o JaCoCo.
@@ -1068,11 +1094,84 @@ As evidências do SonarQube estão armazenadas em:
 docs/evidencias/sonar/
 ```
 
+### Observação sobre a configuração da análise
+
+A análise acima apontou apenas 1 issue por dois motivos, identificados depois:
+
+- No SonarQube 26.10, o antigo perfil "Sonar way" foi dividido em três perfis. O perfil padrão passou a ser o "Sonar way core", com apenas o núcleo das regras. Regras como nomes de variáveis, atribuições inúteis, uso de `System.out` e exceções genéricas, que aparecem na análise da `CartaoLancamentoService`, só estão ativas no perfil "Sonar way comprehensive".
+- O scanner recebeu as classes compiladas (`sonar.java.binaries`), mas não os jars das dependências (`sonar.java.libraries`). Sem eles, regras que dependem dos tipos do Spring, como a de injeção de dependência por campo, não são aplicadas.
+
+Uma nova análise da `UsuarioService`, com o perfil comprehensive e os jars das dependências, apontou 11 issues, todas de manutenibilidade. Por isso, com a autorização da professora, o relatório de inspeção foi refeito com uma classe de complexidade maior, a `CaixaService`, descrita a seguir. A correção da `UsuarioService` acima e o print correspondente foram mantidos como registro da análise feita na época.
+
+## Relatório de inspeção — SonarQube na `CaixaService`
+
+Para o relatório de inspeção foi escolhida a `CaixaService` (abertura e fechamento de caixa, cofre e banco), uma classe que não é CRUD e tem a maior complexidade ciclomática entre as services ainda não utilizadas pelo grupo.
+
+A análise utilizou o SonarQube Community Build 26.10 com o perfil **Sonar way comprehensive**, que contém as regras que aparecem na análise da `CartaoLancamentoService`, e com as classes compiladas e os jars das dependências:
+
+```powershell
+mvn -DskipTests compile dependency:copy-dependencies "-DincludeScope=compile"
+```
+
+```powershell
+docker run --rm -e SONAR_HOST_URL=http://host.docker.internal:9000 -e SONAR_TOKEN=<token> -v "${PWD}:/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=pdv -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes "-Dsonar.java.libraries=target/dependency/*.jar" -Dsonar.java.source=8
+```
+
+O scanner é executado em um container porque a versão atual exige Java 17, e o projeto utiliza Java 8.
+
+| Métrica | Antes | Depois |
+| --- | ---: | ---: |
+| Issues abertas | 22 | 0 |
+| Bugs (Reliability) | 2 | 0 |
+| Code smells (Maintainability) | 20 | 0 |
+| Complexidade cognitiva | 39 | 25 |
+| Complexidade ciclomática | 34 | 37 |
+
+A complexidade cognitiva mede a dificuldade de leitura do código e era a métrica apontada pelo Sonar (o método `cadastro()` tinha 24, acima do limite de 15). A complexidade ciclomática conta os caminhos de execução e subiu um pouco, porque dividir um método em métodos menores não elimina caminhos: cada método novo e cada `case` do `switch` somam à contagem.
+
+### Principais problemas e correções
+
+- **Acesso a `Optional` sem verificação** em `fechaCaixa` (2 bugs): fechar um caixa inexistente gerava `NoSuchElementException`. Passou a usar `orElseThrow`, com a mensagem "Caixa não encontrado".
+- **Estado guardado no serviço:** o campo `usuario` ficava no objeto do serviço, que o Spring compartilha entre todos os usuários. Duas aberturas de caixa simultâneas poderiam misturar os dados. O campo e o campo `descricao`, que tinha o mesmo problema, viraram variáveis locais.
+- **Complexidade cognitiva alta** em `cadastro()`: o método foi dividido em métodos menores (descrição padrão, observação da abertura, limpeza de agência e conta e lançamento do saldo inicial), e o ternário aninhado foi substituído por um `switch`.
+- **Exceções genéricas:** as 6 `RuntimeException` foram substituídas pela `CaixaException`, no mesmo padrão da `CartaoLancamentoException`.
+- **`System.out`** imprimindo agência e conta: removido.
+- **Injeção de dependência por campo:** substituída por injeção via construtor.
+- **Outros:** `if` aninhados unidos, retorno direto de variável temporária e data atual com o fuso horário explícito (`ZoneId.systemDefault()`, que mantém o comportamento).
+
+As mensagens exibidas ao usuário e as assinaturas dos métodos públicos não foram alteradas. A `CaixaException` herda de `RuntimeException`, então o rollback da transação e o tratamento nos controllers continuam iguais. A única mudança de comportamento é a exceção ao fechar um caixa inexistente, que já era capturada pelo `CaixaController`.
+
+### Issue aceita
+
+A issue `java:S2143` ("use a API `java.time`") foi marcada como aceita no SonarQube, com a justificativa registrada na própria issue: a entidade `Caixa` utiliza `java.sql.Date` e `java.sql.Timestamp`, e o `CaixaRepository` recebe `java.sql.Date` nas consultas por data. Migrar para `java.time` exigiria alterar a entidade, o mapeamento no banco e o repositório, fora do escopo da correção da `CaixaService`.
+
+### Validação
+
+Não foram criados testes automatizados para a `CaixaService`. Os testes existentes do projeto foram executados após as correções para verificar que as classes que dependem da `CaixaService` continuam funcionando:
+
+```powershell
+mvn test "-Dtest=*ServiceTest,*ServiceIntegrationTest" "-Djacoco.skip=true"
+```
+
+```text
+Tests run: 90, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+Esses testes utilizam um mock da `CaixaService` e, por isso, não executam o código corrigido. O comportamento da classe foi verificado manualmente na aplicação:
+
+| Cenário | Resultado esperado | Resultado |
+| --- | --- | --- |
+| Abrir caixa com descrição vazia e sem valor de abertura | Caixa aberto com a descrição "Caixa diário" | Passou |
+| Abrir banco com agência `12-3`, conta `45.678-9` e valor maior que zero | Agência e conta gravadas só com dígitos e lançamento "Abertura de banco" criado | Passou |
+| Fechar caixa com senha incorreta | "Senha incorreta, favor verifique" | Passou |
+| Fechar caixa com senha correta | "Caixa fechado com sucesso" | Passou |
+
+As evidências estão armazenadas em [`docs/evidencias/sonar/`](docs/evidencias/sonar/) (`sonar_caixa_antes_1.png` a `sonar_caixa_antes_3.png` e `sonar_caixa_depois_0_issues.png`).
+
 ## Avaliação ISO/IEC 25010
 
-A funcionalidade de cadastro e gerenciamento de usuários também foi avaliada com base nas oito características de qualidade do produto da **ISO/IEC 25010:2011**, utilizando uma escala de 1 a 5.
-
-A avaliação completa, incluindo medidas, notas e justificativas, está documentada no [Plano de Teste Paulo (entrega 2)](https://docs.google.com/document/d/1_vq40IAiF3ems6j0cztAtJ9YXxmOqY2h3qoynlZDJsU/edit?tab=t.0).
+A avaliação ISO/IEC 25010 foi feita pelo grupo para o sistema como um todo. Ver [Avaliação ISO/IEC 25010 — Sistema PDV](#avaliação-isoiec-25010--sistema-pdv).
 
 ## Observação sobre a execução de `mvn test`
 

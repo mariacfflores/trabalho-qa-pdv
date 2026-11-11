@@ -216,3 +216,25 @@ Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os
   Atualizar o Selenium para a versão 4 (que baixa o ChromeDriver automaticamente) foi descartado, por alterar a configuração usada pelos testes da Maria. O teste não funcional, opcional, não foi implementado.
 
 - **Validação:** Executado 3 vezes seguidas com dados novos: `Tests run: 1, Failures: 0, Errors: 0`. Ao consultar o banco, verificou-se que a data `01/01/1990` foi gravada como `0013-06-06`: o datepicker e o servidor usam formatos de data diferentes. O defeito foi registrado na issue #23. As versões iniciais dos arquivos alterados estão em `docs/ai/paulo-entrega2/`.
+
+## Registro 12 - Revisão da Entrega 2, técnica funcional e relatório de inspeção da CaixaService
+
+- **Responsável:** Paulo Carrano
+- **Atividade:** Revisar os artefatos da Entrega 2, documentar a técnica funcional da `UsuarioService`, refazer o relatório de inspeção (SonarQube) com uma classe de complexidade maior e referenciar no README a avaliação ISO/IEC 25010 do grupo.
+- **Ferramenta:** Claude Code (Anthropic), modelo Claude Opus 5.5.
+- **Prompt/instrução:** Foi pedido para revisar a Entrega 2, apontar o que faltava e recomendar outra classe para o relatório de inspeção, já que a `UsuarioService` gerou apenas 1 issue e a professora autorizou usar uma classe diferente. Foram definidas as regras: não inferir nada sem perguntar, explicar todas as etapas detalhadamente, não criar testes fora do escopo e não alterar regras de negócio.
+- **Resultado:**
+  - A revisão confirmou os requisitos já atendidos e apontou duas lacunas: a técnica funcional não estava documentada e a avaliação ISO do sistema, enviada pelo grupo apenas no Classroom, não estava referenciada no README.
+  - A IA comparou as classes candidatas pela complexidade ciclomática (`CaixaService` 34, `VendaService` 29, `ProdutoService` 14, `PessoaService` 12) e recomendou a `CaixaService`.
+  - A sessão de revisão levantou a hipótese de que a análise anterior estava incompleta por falta de `sonar.java.binaries`. Na conferência, a hipótese não se confirmou como formulada: as classes compiladas haviam sido informadas, mas faltavam os jars das dependências (`sonar.java.libraries`). Além disso, foi identificado que no SonarQube 26.10 o perfil padrão passou a ser o "Sonar way core", com apenas o núcleo das regras, e que as regras presentes na análise da `CartaoLancamentoService` só estão ativas no "Sonar way comprehensive".
+- **Decisão:**
+  - Escolhida a `CaixaService`. A `VendaService` foi rejeitada: ela tem 11 dependências injetadas e nenhum teste, o que tornaria arriscado refatorar o fechamento de venda sem alterar seu comportamento.
+  - Adotado o perfil "Sonar way comprehensive" para a `CaixaService`. A rejeição de um perfil mais rígido, registrada no Registro 9, partia da premissa de que o perfil padrão era o mesmo utilizado na análise da `CartaoLancamentoService`, o que não se confirmou.
+  - A issue `java:S2143` (usar a API `java.time`) foi marcada como aceita, com justificativa: a entidade `Caixa` e o `CaixaRepository` utilizam `java.sql.Date` e `java.sql.Timestamp`, e alterá-los está fora do escopo.
+  - Mantida a seção do Sonar da `UsuarioService`, com uma observação sobre a configuração da análise; as novas issues da `UsuarioService` não foram corrigidas, pois optou-se por seguir com a `CaixaService`.
+  - A técnica funcional foi documentada relacionando os casos existentes às classes de equivalência, sem criar testes novos.
+- **Validação:**
+  - Configuração do scanner: com o perfil padrão e os jars, a `CaixaService` apresentou 5 issues; com o perfil comprehensive, 22. Com o perfil comprehensive, a `UsuarioService` passou de 1 para 11 issues.
+  - SonarQube na `CaixaService`: 22 issues antes (2 bugs e 20 code smells) e 0 abertas depois, com 1 aceita. Complexidade cognitiva de 39 para 25; ciclomática de 34 para 37. Das issues previstas, as de `S112`, `S6813`, `S3655`, `S106`, `S3776`, `S3358`, `S1066`, `S1488` e `S1117` se confirmaram; `S2201`, `S4551` e a comparação com `equals("")` não apareceram; `S1450`, `S8688` e `S2143` apareceram sem estar previstas.
+  - Testes existentes após as correções: `Tests run: 90, Failures: 0, Errors: 0`.
+  - Verificação manual feita por Paulo na aplicação: abertura de caixa com descrição vazia, abertura de banco com agência e conta com pontuação, fechamento com senha incorreta e com senha correta. Todos os cenários tiveram o resultado esperado.
