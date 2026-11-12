@@ -62,7 +62,6 @@ class RecebimentoServiceIntegrationTest {
 
 	@BeforeEach
 	void setUp() {
-		recebimentoService = new RecebimentoService();
 		recebimentoParcelaService = new RecebimentoParcelaService();
 		parcelaService = new ParcelaService();
 		caixaLancamentoService = new CaixaLancamentoService();
@@ -77,22 +76,14 @@ class RecebimentoServiceIntegrationTest {
 		usuarioService = mock(UsuarioService.class);
 		cartaoLancamentoService = mock(CartaoLancamentoService.class);
 
-		// RecebimentoService -> services reais
-		ReflectionTestUtils.setField(recebimentoService, "recebimentos", recebimentoRepository);
-		ReflectionTestUtils.setField(recebimentoService, "receParcelas", recebimentoParcelaService);
-		ReflectionTestUtils.setField(recebimentoService, "parcelas", parcelaService);
-		ReflectionTestUtils.setField(recebimentoService, "lancamentos", caixaLancamentoService);
-		ReflectionTestUtils.setField(recebimentoService, "titulos", tituloService);
-		ReflectionTestUtils.setField(recebimentoService, "caixas", caixaService);
-		ReflectionTestUtils.setField(recebimentoService, "usuarios", usuarioService);
-		ReflectionTestUtils.setField(recebimentoService, "cartaoLancamentos", cartaoLancamentoService);
+		recebimentoService = new RecebimentoService(recebimentoRepository, mock(PessoaService.class),
+				recebimentoParcelaService, parcelaService, caixaService, usuarioService, caixaLancamentoService,
+				tituloService, cartaoLancamentoService);
 
-		// Services reais -> repositories simulados
 		ReflectionTestUtils.setField(recebimentoParcelaService, "recebimentoparcelas", recebimentoParcelaRepository);
 		ReflectionTestUtils.setField(parcelaService, "parcelas", parcelaRepository);
 		ReflectionTestUtils.setField(caixaLancamentoService, "caixaLancamento", caixaLancamentoRepository);
 
-		// O receber usa o usuario logado (classe Aplicacao)
 		SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("gerente", "123"));
 
 		when(tituloService.busca(5L)).thenReturn(Optional.of(novoTitulo("DIN")));
@@ -132,7 +123,6 @@ class RecebimentoServiceIntegrationTest {
 		return parcela;
 	}
 
-	// Prepara o banco simulado com o recebimento e suas parcelas
 	private void prepararRecebimento(Double valorTotal, Parcela... parcelas) {
 		List<Parcela> lista = new ArrayList<>();
 		for (Parcela parcela : parcelas) {
@@ -154,10 +144,8 @@ class RecebimentoServiceIntegrationTest {
 
 		assertEquals("Recebimento realizado com sucesso", resultado);
 
-		// ParcelaService real calculou: recebido 100, restante 0, quitado 1
 		verify(parcelaRepository).receber(eq(0.0), eq(0.0), eq(100.0), eq(0.0), eq(1), any(), eq(10L));
 
-		// CaixaLancamentoService real montou e salvou o lancamento
 		ArgumentCaptor<CaixaLancamento> captor = ArgumentCaptor.forClass(CaixaLancamento.class);
 		verify(caixaLancamentoRepository).save(captor.capture());
 
@@ -177,7 +165,6 @@ class RecebimentoServiceIntegrationTest {
 
 		recebimentoService.receber(1L, 30.0, 0.0, 0.0, 5L);
 
-		// recebido 30, restante 70, quitado 0
 		verify(parcelaRepository).receber(eq(0.0), eq(0.0), eq(30.0), eq(70.0), eq(0), any(), eq(10L));
 	}
 

@@ -112,7 +112,6 @@ public class RecebimentoServiceTest {
 			return recebimento;
 		});
 
-		// Executando o método que estamos testando
 		String resultado = recebimentoService.abrirRecebimento(10L, new String[] { "1", "2" });
 
 		assertEquals("100", resultado);
@@ -261,12 +260,10 @@ public class RecebimentoServiceTest {
 		SecurityContextHolder.clearContext();
 	}
 
-	// Simula o usuário logado, pois o receber usa a classe Aplicacao
 	private void logarUsuario() {
 		SecurityContextHolder.getContext().setAuthentication(new TestingAuthenticationToken("gerente", "123"));
 	}
 
-	// Cria um título com a sigla informada (ex: DIN, CARTDEB, CARTCRED)
 	private Titulo criarTitulo(String sigla) {
 		TituloTipo tipo = new TituloTipo();
 		tipo.setSigla(sigla);
@@ -396,7 +393,6 @@ public class RecebimentoServiceTest {
 		assertEquals(110.0, recebimento.getValor_recebido());
 		assertNotNull(recebimento.getData_processamento());
 
-		// Acréscimo, desconto e título gravados no recebimento
 		assertEquals(5.0, recebimento.getValor_acrescimo());
 		assertEquals(2.0, recebimento.getValor_desconto());
 		assertEquals("DIN", recebimento.getTitulo().getTipo().getSigla());
@@ -425,7 +421,6 @@ public class RecebimentoServiceTest {
 
 		verify(parcelas).receber(1L, 30.0, 0.00, 0.00);
 	
-		// Só a primeira parcela recebe; a segunda não recebe nada
 		verify(parcelas, times(1)).receber(any(), anyDouble(), anyDouble(), anyDouble());
 	}
 
@@ -514,11 +509,96 @@ public class RecebimentoServiceTest {
 		when(receParcelas.parcelasDoReceber(1L)).thenReturn(lista);
 		when(caixas.caixaAberto()).thenReturn(Optional.of(mock(Caixa.class)));
 
-		// Recebe 100: quita a parcela de 50 e sobram 50 sem parcela para receber
 		recebimentoService.receber(1L, 100.0, 0.0, 0.0, 5L);
 
-		// O laço percorre só a parcela existente
 		verify(parcelas, times(1)).receber(1L, 50.0, 0.00, 0.00);
+	}
+
+	@Test
+	void deveAceitarParcelaDeClienteComCodigoMaiorQue127() {
+		Long codigoCliente = 1000L;
+
+		Pessoa cliente = mock(Pessoa.class);
+		when(cliente.getCodigo()).thenReturn(new Long(codigoCliente));
+
+		Receber receber = mock(Receber.class);
+		when(receber.getPessoa()).thenReturn(cliente);
+
+		Parcela parcela1 = mock(Parcela.class);
+		when(parcela1.getQuitado()).thenReturn(0);
+		when(parcela1.getValor_restante()).thenReturn(50.0);
+		when(parcela1.getReceber()).thenReturn(receber);
+
+		when(parcelas.busca(1L)).thenReturn(parcela1);
+		when(pessoas.buscaPessoa(new Long(codigoCliente))).thenReturn(Optional.of(cliente));
+
+		when(recebimentos.save(any(Recebimento.class))).thenAnswer(invocacao -> {
+			Recebimento recebimento = invocacao.getArgument(0);
+			recebimento.setCodigo(100L);
+			return recebimento;
+		});
+
+		String resultado = recebimentoService.abrirRecebimento(new Long(codigoCliente), new String[] { "1" });
+
+		assertEquals("100", resultado);
+	}
+
+	@Test
+	void deveRecusarRecebimentoComTituloNulo() {
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.receber(1L, 50.0, 0.0, 0.0, null);
+		});
+
+		assertEquals("Selecione um título para realizar o recebimento", exception.getMessage());
+	}
+
+	@Test
+	void deveRecusarRecebimentoInexistente() {
+		when(recebimentos.findById(1L)).thenReturn(Optional.empty());
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.receber(1L, 50.0, 0.0, 0.0, 5L);
+		});
+
+		assertEquals("Recebimento não encontrado", exception.getMessage());
+	}
+
+	@Test
+	void deveRecusarTituloInexistente() {
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(criarRecebimentoAberto(100.0)));
+		when(titulos.busca(5L)).thenReturn(Optional.empty());
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.receber(1L, 50.0, 0.0, 0.0, 5L);
+		});
+
+		assertEquals("Título não encontrado", exception.getMessage());
+	}
+
+	@Test
+	void deveRecusarRecebimentoEmDinheiroSemCaixaAberto() {
+		logarUsuario();
+
+		Parcela parcela1 = mock(Parcela.class);
+		when(parcela1.getValor_restante()).thenReturn(100.0);
+		when(parcela1.getCodigo()).thenReturn(1L);
+
+		List<Parcela> lista = new ArrayList<>();
+		lista.add(parcela1);
+
+		when(recebimentos.findById(1L)).thenReturn(Optional.of(criarRecebimentoAberto(100.0)));
+		when(titulos.busca(5L)).thenReturn(Optional.of(criarTitulo("DIN")));
+		when(receParcelas.parcelasDoReceber(1L)).thenReturn(lista);
+		when(caixas.caixaAberto()).thenReturn(Optional.empty());
+
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+			recebimentoService.receber(1L, 100.0, 0.0, 0.0, 5L);
+		});
+
+		assertEquals("Nenhum caixa aberto", exception.getMessage());
+
+		verify(lancamentos, never()).lancamento(any());
+		verify(recebimentos, never()).save(any());
 	}
 
 }
