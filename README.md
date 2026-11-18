@@ -560,26 +560,9 @@ docs/evidencias/sonar/
 
 ## Avaliação ISO/IEC 25010
 
-A funcionalidade também foi avaliada com base nas oito características de qualidade do produto da **ISO/IEC 25010:2011**.
+A avaliação de qualidade segundo a ISO/IEC 25010:2023 foi realizada considerando o sistema PDV como um todo, e não individualmente por classe.
 
-Foi utilizada uma escala de 1 a 5, considerando:
-
-- a qualidade observada no escopo analisado;
-- as medidas obtidas durante os testes;
-- a quantidade e a força das evidências disponíveis.
-
-A análise considera características como:
-
-- adequação funcional;
-- eficiência de desempenho;
-- compatibilidade;
-- usabilidade;
-- confiabilidade;
-- segurança;
-- manutenibilidade;
-- portabilidade.
-
-A avaliação completa, incluindo medidas, notas e justificativas, está documentada no Plano de Teste.
+Foram avaliadas as nove características de qualidade do produto, com definição de nível e justificativa para cada uma. A avaliação completa está documentada no Plano de Teste.
 
 ## Observação sobre a execução de `mvn test`
 
