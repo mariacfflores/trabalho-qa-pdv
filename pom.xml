@@ -250,6 +250,22 @@
                     </dependency>
                 </dependencies>
 
+                <executions>
+                    <!-- PIT só da RecebimentoService (Caio):
+                         mvn test-compile org.pitest:pitest-maven:mutationCoverage@caio -->
+                    <execution>
+                        <id>caio</id>
+                        <configuration>
+                            <targetClasses>
+                                <param>net.originmobi.pdv.service.RecebimentoService</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>net.originmobi.pdv.service.RecebimentoServiceTest</param>
+                            </targetTests>
+                        </configuration>
+                    </execution>
+                </executions>
+
                 <configuration>
 
                     <targetClasses>
