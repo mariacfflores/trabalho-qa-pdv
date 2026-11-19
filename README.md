@@ -789,8 +789,8 @@ Após as seguintes correções o número de apontamentos diminuiu de 26 para 12:
 - Foram corrigidos 6 casos em que se utilizava System.out.println(), substituindo para o uso do logger SLF4J.
 - 1 casos em que se utilizava printStackTrace(), substituindo por LOGGER.error().
 - Campo dataAtual usado apenas em um método, transformado em variável local de cadastrar().
-- Fuso horário implícito em LocalDate.now() Explicitado com ZoneId.systemDefault().
-- 2 nomes fora do padrão Java, DIRETORIO → diretorio; chave_acesso → chaveAcesso.
+- Fuso horário implícito em LocalDate.now(), explicitado com ZoneId.systemDefault().
+- 2 nomes fora do padrão Java, DIRETORIO → diretorio, chave_acesso → chaveAcesso.
 - 3 casos de lançamento de exceções genéricas, substituídas nas validações de empresa ausente, destinatário ausente e série não configurada.
 
 Evidências: [sonar_notafiscalservice_antes.png](docs\evidencias\sonar\sonar_notafiscalservice_depois.png).
