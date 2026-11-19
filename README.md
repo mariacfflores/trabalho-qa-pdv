@@ -261,17 +261,17 @@ Avaliação do grupo para o sistema PDV como um todo, na versão final do reposi
 
 Para cada característica foi atribuído um nível de importância de 1 a 5, de "não afeta o sucesso do sistema" a "falhas podem causar danos graves", justificado por um elemento concreto do sistema. O documento também apresenta exemplos de conflito entre características.
 
-| Característica | Nível |
-| --- | :---: |
-| Adequação funcional | 5 |
-| Eficiência de desempenho | 3 |
-| Compatibilidade | 2 |
-| Capacidade de interação (usabilidade) | 4 |
-| Confiabilidade | 4 |
-| Segurança | 5 |
-| Manutenibilidade | 3 |
-| Flexibilidade (portabilidade) | 2 |
-| Segurança física (safety) | 1 |
+| Característica                        | Nível |
+| ------------------------------------- | :---: |
+| Adequação funcional                   |   5   |
+| Eficiência de desempenho              |   3   |
+| Compatibilidade                       |   2   |
+| Capacidade de interação (usabilidade) |   4   |
+| Confiabilidade                        |   4   |
+| Segurança                             |   5   |
+| Manutenibilidade                      |   3   |
+| Flexibilidade (portabilidade)         |   2   |
+| Segurança física (safety)             |   1   |
 
 Documento completo, com as justificativas, no Google Docs: [Avaliação ISO/IEC 25010:2023 do sistema PDV](https://docs.google.com/document/d/1zPHFgf995Qx2YUlISeQhbnDIpGhzhMKM6rUGDsfpUKo/edit?usp=sharing)
 
@@ -774,15 +774,26 @@ Os resultados ficam em `target/surefire-reports/` e as capturas em `target/selen
 
 ## Inspeção estática — SonarQube
 
-[ESPERANDO AULA DO DIA 9/11]
+A inspeção foi feita sobre a classe `NotaFiscalService` a análise foi feita utilizando a extensão do SonarQube na IDE Eclipse
 
 ### Antes da correção
 
-[ESPERANDO AULA DO DIA 9/11]
+Foram identificados 26 apontamentos inicialmente utilizando a extensão:
+
+Evidências: [sonar_notafiscalservice_antes.png](docs\evidencias\sonar\sonar_notafiscalservice_antes.png).
 
 ### Depois da correção
 
-[ESPERANDO AULA DO DIA 9/11]
+Após as seguintes correções o número de apontamentos diminuiu de 26 para 12:
+
+- Foram corrigidos 6 casos em que se utilizava System.out.println(), substituindo para o uso do logger SLF4J.
+- 1 casos em que se utilizava printStackTrace(), substituindo por LOGGER.error().
+- Campo dataAtual usado apenas em um método, transformado em variável local de cadastrar().
+- Fuso horário implícito em LocalDate.now() Explicitado com ZoneId.systemDefault().
+- 2 nomes fora do padrão Java, DIRETORIO → diretorio; chave_acesso → chaveAcesso.
+- 3 casos de lançamento de exceções genéricas, substituídas nas validações de empresa ausente, destinatário ausente e série não configurada.
+
+Evidências: [sonar_notafiscalservice_antes.png](docs\evidencias\sonar\sonar_notafiscalservice_depois.png).
 
 ## Observação sobre a execução de `mvn test`
 
@@ -1102,13 +1113,13 @@ docker run --rm -e SONAR_HOST_URL=http://host.docker.internal:9000 -e SONAR_TOKE
 
 O scanner é executado em um container porque a versão atual exige Java 17, e o projeto utiliza Java 8.
 
-| Métrica | Antes | Depois |
-| --- | ---: | ---: |
-| Issues abertas | 22 | 0 |
-| Bugs (Reliability) | 2 | 0 |
-| Code smells (Maintainability) | 20 | 0 |
-| Complexidade cognitiva | 39 | 25 |
-| Complexidade ciclomática | 34 | 37 |
+| Métrica                       | Antes | Depois |
+| ----------------------------- | ----: | -----: |
+| Issues abertas                |    22 |      0 |
+| Bugs (Reliability)            |     2 |      0 |
+| Code smells (Maintainability) |    20 |      0 |
+| Complexidade cognitiva        |    39 |     25 |
+| Complexidade ciclomática      |    34 |     37 |
 
 A complexidade cognitiva mede a dificuldade de leitura do código e era a métrica apontada pelo Sonar (o método `cadastro()` tinha 24, acima do limite de 15). A complexidade ciclomática conta os caminhos de execução e subiu um pouco, porque dividir um método em métodos menores não elimina caminhos: cada método novo e cada `case` do `switch` somam à contagem.
 
@@ -1143,12 +1154,12 @@ BUILD SUCCESS
 
 Esses testes utilizam um mock da `CaixaService` e, por isso, não executam o código corrigido. O comportamento da classe foi verificado manualmente na aplicação:
 
-| Cenário | Resultado esperado | Resultado |
-| --- | --- | --- |
-| Abrir caixa com descrição vazia e sem valor de abertura | Caixa aberto com a descrição "Caixa diário" | Passou |
-| Abrir banco com agência `12-3`, conta `45.678-9` e valor maior que zero | Agência e conta gravadas só com dígitos e lançamento "Abertura de banco" criado | Passou |
-| Fechar caixa com senha incorreta | "Senha incorreta, favor verifique" | Passou |
-| Fechar caixa com senha correta | "Caixa fechado com sucesso" | Passou |
+| Cenário                                                                 | Resultado esperado                                                              | Resultado |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------- |
+| Abrir caixa com descrição vazia e sem valor de abertura                 | Caixa aberto com a descrição "Caixa diário"                                     | Passou    |
+| Abrir banco com agência `12-3`, conta `45.678-9` e valor maior que zero | Agência e conta gravadas só com dígitos e lançamento "Abertura de banco" criado | Passou    |
+| Fechar caixa com senha incorreta                                        | "Senha incorreta, favor verifique"                                              | Passou    |
+| Fechar caixa com senha correta                                          | "Caixa fechado com sucesso"                                                     | Passou    |
 
 As evidências estão armazenadas em [`docs/evidencias/sonar/`](docs/evidencias/sonar/) (`sonar_caixa_antes_1.png` a `sonar_caixa_antes_3.png` e `sonar_caixa_depois_0_issues.png`).
 
