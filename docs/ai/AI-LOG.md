@@ -238,3 +238,20 @@ Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os
   - SonarQube na `CaixaService`: 22 issues antes (2 bugs e 20 code smells) e 0 abertas depois, com 1 aceita. Complexidade cognitiva de 39 para 25; ciclomática de 34 para 37. Das issues previstas, as de `S112`, `S6813`, `S3655`, `S106`, `S3776`, `S3358`, `S1066`, `S1488` e `S1117` se confirmaram; `S2201`, `S4551` e a comparação com `equals("")` não apareceram; `S1450`, `S8688` e `S2143` apareceram sem estar previstas.
   - Testes existentes após as correções: `Tests run: 90, Failures: 0, Errors: 0`.
   - Verificação manual feita por Paulo na aplicação: abertura de caixa com descrição vazia, abertura de banco com agência e conta com pontuação, fechamento com senha incorreta e com senha correta. Todos os cenários tiveram o resultado esperado.
+
+## Registro 13 - Ampliação dos testes unitários de NotaFiscalService (Entrega 2)
+
+- **Responsável:** Rafael Valverde Teixeira
+- **Atividade:** Ampliar os testes unitários da `NotaFiscalService`, agora criando testes para os métodos salvaXML(), removeXML() e emitir(), além de sugestões de novos testes possíveis para os outros métodos
+- **Ferramenta:** ChatCPT Codex, modelo GPT-6 Astra médio
+- **Prompt/instrução:** Com base nos testes unitários já criados me proponha soluções para implementar testes para os métodos salvaXML, removeXML e emitir, além disso me proponha novos testes dos métodos já testados anteriormente para aumentar a cobertura deles.
+- **Resultado:** A IA propôs 5 novos testes unitários para os métodos anteriormente testados, sendo 3 para cadastrar() e um aumento líquido de 2 casos para geraDV(), além disso, para os métodos salvaXML(), removeXML() e emitir(), a IA propos a criação da classe RecursosXmlNfe para fornecer os recursos externos ao serviço e permitir sua substituição nos testes. Assim, os testes unitários não gravariam nem excluíriam arquivos reais. Com base nisso ela propos 9 testes para esses métodos sendo 2 de emitir(), 3 de salvaXML() e 4 de removeXML().
+- **Decisão:**
+  - Implementação dos 5 nvos testes unitários nos métodos anteriormente testados.
+  - Adesão da criação da classe RecursosXmlNfe para ajudar nos testes que utilizam XML
+  - Criação dos testes unitários para salvaXML, removeXML e emitir
+- **Validação:**
+  - A suíte passou de 11 para 25 casos unitários, considerando cada execução do teste parametrizado como um caso. Na execução via Maven, o resultado foi: `Tests run: 25, Failures: 0, Errors: 0, Skipped: 0`.
+  - Os 9 casos relacionados a XML utilizam dependências simuladas com Mockito, verificando chamadas, argumentos e tratamento de falhas sem gravar ou excluir arquivos reais.
+  - O JaCoCo registrou 100% de cobertura de linhas e branches na `NotaFiscalService`, incluindo os 16 ramos identificados.
+  - Os testes foram executados novamente após as correções da inspeção estática e continuaram passando.
