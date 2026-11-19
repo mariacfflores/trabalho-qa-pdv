@@ -116,6 +116,61 @@ No teste manual, o caso `PDVQA: PDV - QA` foi executado na aplicação rodando l
 
 Assim, as propostas da IA foram analisadas, questionadas e ajustadas conforme os resultados observados, sem considerar a aprovação dos testes unitários como comprovação de cobertura completa ou ausência de defeitos — o próprio teste manual, aliás, evidenciou um defeito que os testes unitários (isolados do front-end) não seriam capazes de capturar.
 
+## Registro — Ampliação dos testes, integração, Selenium, cobertura, mutação e Sonar da RecebimentoService (Entrega 2)
+
+**Responsável:** Caio de Souza Lima
+
+**Atividade:** Ampliação dos testes unitários da `RecebimentoService` para os métodos `receber` e `remover`, análise dos testes de integração e de sistema (Selenium), avaliação da cobertura estrutural (JaCoCo), análise dos resultados dos testes de mutação (PIT), inspeção de possíveis issues com SonarQube e apoio na documentação.
+
+**Ferramenta:** Claude (Anthropic)
+
+### Uso da IA
+
+Foram disponibilizados à IA o PDF com as instruções da Entrega 2, o código da `RecebimentoService` e os testes desenvolvidos na Entrega 1. Inicialmente, foi solicitado auxílio no mapeamento de possíveis cenários de teste para os métodos `receber` e `remover`, considerando como referência o padrão dos testes existentes para `abrirRecebimento`. O objetivo foi identificar situações relevantes de acordo com a lógica implementada, mantendo os testes simples e sem complexidade desnecessária.
+
+Ao longo da atividade, a IA também foi utilizada como apoio para:
+
+- compreender os procedimentos de execução do JaCoCo e do PIT, considerando a necessidade de analisar exclusivamente a `RecebimentoService`;
+- analisar a estrutura dos testes de integração desenvolvidos pelos demais integrantes do grupo e identificar possíveis cenários equivalentes para a classe;
+- mapear os cenários do fluxo de recebimento que poderiam ser verificados por meio de testes Selenium, considerando o reaproveitamento da `LoginPage` existente;
+- compreender as possibilidades de configuração do SonarQube for IDE no Eclipse e analisar as issues apontadas pela ferramenta;
+- avaliar alternativas de melhoria no código a partir das recomendações do SonarQube;
+
+### Resultado
+
+A partir das análises e sugestões da IA, foram identificadas oportunidades de ampliação dos testes e de melhoria no código da `RecebimentoService`. Entre os resultados obtidos durante a atividade, destacam-se:
+
+- ampliação de 6 para 23 testes unitários, contemplando validações de título, recebimento, valor, parcelas e caixa, além de cenários de recebimento total, parcial, no cartão e remoção;
+- elaboração de 4 testes de integração (CT-INT-01 a CT-INT-04), utilizando os serviços reais e apenas os repositórios simulados;
+- elaboração de 2 testes Selenium com Page Object (`RecebimentoPage`), incluindo a preparação da parcela utilizada como pré-condição diretamente no banco de dados;
+- identificação da necessidade de uma execução independente do PIT para a `RecebimentoService`, evitando a mistura dos resultados com os da `CartaoLancamentoService`;
+- identificação e análise de 34 issues apontadas pelo SonarQube, envolvendo injeção por construtor, verificação de `Optional`, divisão do método `receber`, utilização de logger, uso de `replace` e tratamento de exceções.
+
+### Decisões e avaliação das sugestões
+
+As sugestões apresentadas pela IA foram analisadas considerando a implementação existente, os padrões adotados pelo grupo e os requisitos da entrega. Nem todas foram aceitas automaticamente. Durante esse processo, destacam-se as seguintes decisões:
+
+- **Configuração do PIT:** a análise do primeiro relatório identificou que os resultados da `CartaoLancamentoService` estavam sendo misturados aos da `RecebimentoService`. A partir dessa constatação, foi avaliada a necessidade de separar as execuções, mantendo uma configuração independente para a classe analisada.
+- **Testes de integração:** foi avaliada a classificação dos testes propostos, buscando garantir que realmente representassem testes de integração. Para isso, foram explicitadas as unidades reais e simuladas, mantendo o banco de dados fora desse nível de teste, uma vez que sua interação é exercitada pelo Selenium.
+- **Criação da `RecebimentoException`:** a sugestão de utilização de uma exceção específica foi analisada considerando os padrões existentes no projeto. A decisão de mantê-la levou em conta a existência da `CaixaException`, já utilizada pelo grupo, e a possibilidade de resolver as 16 issues relacionadas ao uso de exceções genéricas.
+- **Preparação do cenário Selenium:** foi avaliada a alternativa de preparar a parcela diretamente por SQL, em vez de realizar toda a operação pela interface. Essa abordagem foi adotada porque a venda a prazo pela interface apresentou falha no caso manual PDVQA-1 da Entrega 1.
+
+### Validação
+
+Todos os testes foram executados localmente com Maven, apresentando os seguintes resultados:
+
+- **Testes unitários:** 23 aprovados;
+- **Testes de integração:** 4 aprovados;
+- **Testes Selenium:** 2 aprovados, com a aplicação e o MySQL em execução via Docker, tanto antes quanto depois das correções das issues do SonarQube.
+
+Os resultados do PIT foram analisados para avaliar a capacidade dos testes de identificar alterações no comportamento da classe. A primeira execução apresentou 75% de cobertura de mutação. Após a análise e o reforço das asserções consideradas fracas, o resultado chegou a **92% (44/48)**. Os quatro mutantes restantes foram analisados e classificados como equivalentes ou não verificáveis.
+
+No JaCoCo, a cobertura de arestas atingiu **95% (38/40)**. Durante a análise, também foi identificada uma aresta inalcançável no código original, relacionada à verificação de `codtitulo == null` após a condição `codtitulo == 0`, que foi corrigida.
+
+Uma das issues apontadas pelo SonarQube, referente à comparação de objetos `Long` por meio do operador `!=`, foi investigada com o teste `deveAceitarParcelaDeClienteComCodigoMaiorQue127`. O teste demonstrou a existência de um defeito real, pois falhava com a implementação original.
+
+Após as alterações avaliadas e aplicadas, uma nova análise no SonarQube apresentou **0 issues**, e todos os testes continuaram aprovados. A execução dos testes antes e depois das alterações também permitiu verificar que o comportamento esperado da classe foi preservado.
+
 ---
 
 ## Registro 5 - Testes unitários da UsuarioService
