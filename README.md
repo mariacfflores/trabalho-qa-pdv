@@ -64,6 +64,8 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
 
+[Plano de Teste Caio (entrega 2)](https://docs.google.com/document/d/12Hu8ioaGWV0IwaVDiwYGnaNHKZD_UWUPOdqbw45WjwM/edit?usp=sharing)
+
 [Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
 
 [Plano de Teste Maria (entrega 2)](https://docs.google.com/document/d/10NS--6N_uLYLpVfLzLJAnMINwDydRKOCB775BK9Z8uE/edit?usp=sharing)
@@ -617,6 +619,181 @@ mvn test "-Dtest=CartaoSeleniumTest"
 Seção destinada aos artefatos da Entrega 2 relacionados à `RecebimentoService`.
 
 **Responsável:** Caio Lima.
+
+## Testes unitários
+
+Os testes unitários da `RecebimentoService` foram ampliados de **6 para 23 casos de teste**, passando a cobrir os três métodos públicos da classe: `abrirRecebimento`, `receber` e `remover`.
+
+As dependências foram isoladas com mocks (Mockito):
+
+- `RecebimentoRepository`;
+- `PessoaService`;
+- `ParcelaService`;
+- `RecebimentoParcelaService`;
+- `TituloService`;
+- `CaixaService`;
+- `CaixaLancamentoService`;
+- `CartaoLancamentoService`;
+- `UsuarioService`.
+
+Como o método `receber` obtém o usuário logado pela classe `Aplicacao` (Spring Security), os testes simulam um usuário autenticado com `TestingAuthenticationToken`, limpando o contexto após cada execução.
+
+Arquivo: [RecebimentoServiceTest.java](src/test/java/net/originmobi/pdv/service/RecebimentoServiceTest.java).
+
+```sh
+mvn test -Dtest=RecebimentoServiceTest
+```
+
+## Técnica funcional
+
+Os casos foram projetados a partir das regras de negócio da classe, utilizando particionamento em classes de equivalência e análise de valor limite:
+
+- **Título:** código nulo, código zero e título inexistente (inválidos); título em dinheiro e título de cartão (válidos, com fluxos diferentes);
+- **Recebimento:** inexistente, já fechado e aberto;
+- **Valor recebido:** zero (limite inválido), maior que o total (inválido), parcial e igual ao total (válidos);
+- **Parcelas:** lista vazia, uma parcela, duas parcelas e valor maior que a soma das parcelas existentes;
+- **Caixa:** com e sem caixa aberto;
+- **Remoção:** recebimento aberto, recebimento processado e falha no banco.
+
+## Técnica estrutural — JaCoCo
+
+| Métrica | Resultado |
+|---|---|
+| **Arestas (todas-arestas)** | **38/40 = 95%** |
+| Linhas | 105/115 |
+
+O critério de pelo menos 80% de cobertura de arestas foi atendido.
+
+Evidência: [jacoco_recebimento_cobertura_depois.png](docs/evidencias/cobertura/jacoco_recebimento_cobertura_depois.png)
+
+Antes das correções do SonarQube, a cobertura era de **31/34 = 91%** ([jacoco_recebimento_cobertura.png](docs/evidencias/cobertura/jacoco_recebimento_cobertura.png)). Uma das arestas não cobertas era inalcançável: o código original comparava `codtitulo == 0` antes de `codtitulo == null`, de modo que um valor nulo gerava `NullPointerException` antes de chegar à segunda condição. Esse defeito foi corrigido na refatoração.
+
+## Teste baseado em defeitos — PIT
+
+| Métrica | Resultado |
+|---|---|
+| **Escore de mutação** | **44/48 = 92%** |
+
+O critério de pelo menos 80% de escore de mutação foi atendido.
+
+Na primeira execução, o escore era de **75%**. Os mutantes sobreviventes revelaram asserções fracas, que foram reforçadas:
+
+- remoção das chamadas `setValor_acrescimo`, `setValor_desconto` e `setTitulo`: o teste de sucesso passou a verificar acréscimo, desconto e título gravados no recebimento;
+- troca de `vlrecebido > 0` por `>= 0`: o teste de pagamento parcial passou a verificar que `ParcelaService.receber` é chamado exatamente uma vez;
+- troca de `i < listParcelas.size()` por `<=`: foi criado um teste em que o valor recebido supera a soma das parcelas existentes.
+
+Os 4 mutantes restantes não podem ser mortos:
+
+| Mutante | Motivo |
+|---|---|
+| `vlsobra < 0` → `<= 0` | Equivalente: substituir 0 por 0 não altera o resultado |
+| `vlquitado < 0` → `<= 0` | Equivalente pelo mesmo motivo |
+| `* -1` → `/ -1` | Equivalente: multiplicar ou dividir por -1 produz o mesmo valor |
+| Remoção de `setRecebimento` no lançamento de caixa | `CaixaLancamento` não possui `getRecebimento()`, impedindo a verificação |
+
+Evidência: [pit_recebimento_mutacao.png](docs/evidencias/mutacao/pit_recebimento_mutacao.png)
+
+Foi criada uma execução própria do PIT no `pom.xml`, que analisa apenas a `RecebimentoService`:
+
+```sh
+mvn test-compile org.pitest:pitest-maven:mutationCoverage@caio
+```
+
+## Testes de integração
+
+Os testes de integração verificam a interação entre a `RecebimentoService` e os serviços reais dos quais ela depende. Apenas a camada de persistência foi substituída por dublês:
+
+| Real | Simulado (mock) |
+|---|---|
+| `RecebimentoService` | `RecebimentoRepository` |
+| `ParcelaService` | `ParcelaRepository` |
+| `RecebimentoParcelaService` | `RecebimentoParcelaRepository` |
+| `CaixaLancamentoService` | `CaixaLancamentoRepository` |
+
+Casos de teste:
+
+- **CT-INT-01** `deveQuitarParcelaELancarEntradaNoCaixa`: ao receber o valor total, a `ParcelaService` calcula restante 0 e quitado = 1, e a `CaixaLancamentoService` salva um lançamento de entrada do tipo recebimento;
+- **CT-INT-02** `deveDeixarParcelaEmAbertoNoPagamentoParcial`: ao receber 30 de uma parcela de 100, o restante fica em 70 e a parcela permanece em aberto;
+- **CT-INT-03** `deveQuitarDuasParcelas`: o valor recebido é distribuído entre duas parcelas, quitando ambas;
+- **CT-INT-04** `devePropagarFalhaDaParcelaSemSalvarRecebimento`: uma falha na persistência da parcela é propagada sem lançar no caixa nem fechar o recebimento.
+
+A integração com o banco de dados não faz parte deste nível; ela é exercitada pelo teste de sistema com Selenium.
+
+Arquivo: [RecebimentoServiceIntegrationTest.java](src/test/java/net/originmobi/pdv/service/RecebimentoServiceIntegrationTest.java).
+
+```sh
+mvn test -Dtest=RecebimentoServiceIntegrationTest
+```
+
+## Teste de sistema — Selenium
+
+O teste de sistema executa o fluxo de recebimento de título pela interface web, com a aplicação e o banco MySQL em execução, utilizando o padrão Page Object.
+
+Cenários:
+
+- `deveReceberTituloComSucesso`: seleciona a parcela do cliente, abre o recebimento, escolhe o título "Dinheiro", informa R$ 100,00 e verifica a mensagem "Recebimento realizado com sucesso";
+- `deveRecusarValorMaiorQueOTitulo`: no mesmo fluxo, informa R$ 150,00 e verifica a mensagem "Valor de recebimento é superior aos títulos".
+
+**Pré-condição:** antes de cada cenário, uma parcela de R$ 100,00 em aberto é inserida diretamente no banco, junto com o título "Dinheiro" e um caixa aberto, caso ainda não existam. A preparação via SQL foi necessária porque a venda a prazo pela interface apresenta defeito, conforme registrado no caso de teste manual PDVQA-1 ([TesteLink_RecebimentoTitulo.pdf](docs/testes_manuais/TesteLink_RecebimentoTitulo.pdf)). Durante a investigação, verificou-se que o banco não possuía nenhum título cadastrado, o que explica o dropdown "Título" vazio; ainda assim, a ausência de tratamento para essa situação ("Zero length string") permanece como defeito.
+
+O teste foi executado antes e depois das correções do SonarQube, passando nas duas execuções.
+
+Arquivos:
+
+- [RecebimentoSeleniumTest.java](src/test/java/net/originmobi/pdv/selenium/RecebimentoSeleniumTest.java)
+- [RecebimentoPage.java](src/test/java/net/originmobi/pdv/selenium/page/RecebimentoPage.java)
+
+Com a aplicação em execução (`docker compose up -d`):
+
+```sh
+mvn test -Dtest=RecebimentoSeleniumTest -Dwebdriver.chrome.driver=drivers/chromedriver
+```
+
+## Inspeção estática — SonarQube
+
+A `RecebimentoService` foi analisada com o plugin SonarQube for IDE (Eclipse), utilizando o perfil de regras padrão.
+
+### Antes das correções
+
+A análise inicial apresentou **34 issues**:
+
+| Qtd | Issue |
+|:-:|---|
+| 1 | Comparação de objetos `Long` com `!=` em vez de `equals()` |
+| 5 | Acesso ao conteúdo de `Optional` sem verificar `isPresent()` |
+| 16 | Uso de exceções genéricas (`RuntimeException`) |
+| 9 | Injeção de dependência por atributo (`@Autowired`) |
+| 1 | Complexidade cognitiva do método `receber` acima do permitido (24, limite 15) |
+| 1 | Uso de `replaceAll()` onde `replace()` é suficiente |
+| 1 | Uso de `System.out` em vez de logger |
+
+Evidência: [sonar_recebimento_antes.png](docs/evidencias/sonar/sonar_recebimento_antes.png)
+
+A issue de comparação com `!=` corresponde a um defeito real em `abrirRecebimento`: o Java reaproveita objetos `Long` apenas entre -128 e 127, de modo que clientes com código acima de 127 tinham suas parcelas recusadas com a mensagem "não pertence ao cliente selecionado". Foi criado o caso `deveAceitarParcelaDeClienteComCodigoMaiorQue127`, que falharia com o código original e passa após a correção.
+
+### Correções realizadas
+
+- comparação alterada para `equals()`;
+- verificação dos `Optional` antes do acesso, com mensagens específicas ("Recebimento não encontrado", "Título não encontrado" e "Nenhum caixa aberto");
+- criação da exceção `RecebimentoException`, no mesmo padrão da `CaixaException`;
+- substituição da injeção por atributo por injeção via construtor;
+- divisão do método `receber` em métodos menores (`buscaRecebimentoAberto`, `buscaTitulo`, `validaValorRecebido`, `receberParcelas`, `lancarRecebimento` e `fecharRecebimento`);
+- substituição de `replaceAll()` por `replace()` e de `System.out` por logger;
+- correção da ordem da verificação `codtitulo == null || codtitulo == 0`.
+
+### Depois das correções
+
+Após as correções, uma nova análise foi realizada:
+
+```text
+0 issues
+```
+
+Evidência: [sonar_recebimento_depois.png](docs/evidencias/sonar/sonar_recebimento_depois.png)
+
+Os 23 testes unitários, os 4 testes de integração e os 2 testes de sistema continuaram sendo executados com sucesso após as alterações. Foram adicionados testes para os novos desvios criados na refatoração. Os resultados de JaCoCo e PIT apresentados acima correspondem à versão posterior às correções.
+
+---
 
 ---
 
