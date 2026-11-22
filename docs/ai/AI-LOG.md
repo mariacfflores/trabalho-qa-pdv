@@ -302,11 +302,61 @@ Após as alterações avaliadas e aplicadas, uma nova análise no SonarQube apre
 - **Prompt/instrução:** Com base nos testes unitários já criados me proponha soluções para implementar testes para os métodos salvaXML, removeXML e emitir, além disso me proponha novos testes dos métodos já testados anteriormente para aumentar a cobertura deles.
 - **Resultado:** A IA propôs 5 novos testes unitários para os métodos anteriormente testados, sendo 3 para cadastrar() e um aumento líquido de 2 casos para geraDV(), além disso, para os métodos salvaXML(), removeXML() e emitir(), a IA propos a criação da classe RecursosXmlNfe para fornecer os recursos externos ao serviço e permitir sua substituição nos testes. Assim, os testes unitários não gravariam nem excluíriam arquivos reais. Com base nisso ela propos 9 testes para esses métodos sendo 2 de emitir(), 3 de salvaXML() e 4 de removeXML().
 - **Decisão:**
-  - Implementação dos 5 nvos testes unitários nos métodos anteriormente testados.
+  - Implementação dos 5 novos testes unitários nos métodos anteriormente testados.
   - Adesão da criação da classe RecursosXmlNfe para ajudar nos testes que utilizam XML
   - Criação dos testes unitários para salvaXML, removeXML e emitir
 - **Validação:**
-  - A suíte passou de 11 para 25 casos unitários, considerando cada execução do teste parametrizado como um caso. Na execução via Maven, o resultado foi: `Tests run: 25, Failures: 0, Errors: 0, Skipped: 0`.
-  - Os 9 casos relacionados a XML utilizam dependências simuladas com Mockito, verificando chamadas, argumentos e tratamento de falhas sem gravar ou excluir arquivos reais.
-  - O JaCoCo registrou 100% de cobertura de linhas e branches na `NotaFiscalService`, incluindo os 16 ramos identificados.
-  - Os testes foram executados novamente após as correções da inspeção estática e continuaram passando.
+  - A suíte `NotaFiscalServiceTest` passou de 11 para 25 casos unitários. Essa contagem considera cada execução do teste parametrizado como um caso. A execução via Maven apresentou: `Tests run: 25, Failures: 0, Errors: 0, Skipped: 0`.
+  - No método `cadastrar()`, foram verificados os dados da nota criada, os totais inicializados com zero e a interrupção do fluxo diante de falhas na persistência dos totais ou da nota.
+  - No método `geraDV()`, os casos parametrizados verificaram o cálculo do dígito nos limites dos pesos e dos restos da divisão, comparando os resultados com valores esperados calculados independentemente.
+  - Os 9 casos relacionados a XML verificaram geração da chave, persistência após a geração, gravação do conteúdo, fechamento do escritor, exclusão de arquivos e tratamento de falhas. As dependências foram simuladas com Mockito, sem gravar ou excluir arquivos reais.
+  - Foram utilizadas verificações de chamadas, argumentos e ordem de execução, além de verificações de que determinadas operações não ocorrem quando uma etapa anterior falha.
+  - O JaCoCo registrou 100% de cobertura de linhas e branches da `NotaFiscalService`, incluindo os 16 ramos identificados, superando a meta de 80% estabelecida para o trabalho.
+  - Todos os testes possuem `@DisplayName`. Após as correções da inspeção estática, a suíte foi executada novamente e os 25 casos continuaram passando.
+  - A aprovação dos testes e a cobertura obtida demonstram que os cenários definidos foram exercitados, mas não garantem ausência de defeitos fora desses cenários nem validam a geração e a manipulação reais de arquivos XML.
+
+## Registro 14 - Criar testes de integração para NotaFiscalService (Entrega 2)
+
+- **Responsável:** Rafael Valverde Teixeira
+- **Atividade:** Implementar testes de integração para `NotaFiscalService`.
+- **Ferramenta:** ChatGPT Codex, modelo GPT-6 Astra médio.
+- **Prompt/instrução:** Me ajude a implementar uma suíte de testes de integração para `NotaFiscalService` utilizando o modelo de testes de integração já previamente criados pelo grupo.
+- **Resultado:** Foi criada a classe `NotaFiscalServiceIntegrationTest`, integrando a `NotaFiscalService` com instâncias reais de `EmpresaService`, `PessoaService` e `NotaFiscalTotaisServer`. Somente os repositórios foram simulados com Mockito. Foram implementados 5 cenários: cadastro válido, empresa ausente, destinatário ausente, falha na persistência dos totais e falha ao salvar a nota.
+- **Decisão:**
+  - Manter os testes novos criados pela IA
+  - Verificar a integração entre os serviços, os dados repassados, a ordem das operações e o tratamento de falhas.
+- **Validação:**
+  - A suíte `NotaFiscalServiceIntegrationTest` foi executada via Maven, apresentando: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`.
+  - Os testes utilizaram instâncias reais de `NotaFiscalService`, `EmpresaService`, `PessoaService` e `NotaFiscalTotaisServer`, com repositórios simulados por Mockito. Assim, foi exercitada a colaboração entre os serviços envolvidos no cadastro da nota.
+  - No cenário de cadastro válido, foram conferidos o emissor, o destinatário, o número, a série, a natureza da operação, o tipo da nota e os 13 valores dos totais inicializados com zero. Também foi verificado o vínculo entre a nota e os totais cadastrados.
+  - A ordem das operações foi verificada com `InOrder`: consulta da empresa, consulta do destinatário, persistência dos totais, busca do próximo número e persistência da nota.
+  - Nos cenários de empresa ou destinatário ausentes, foram verificadas as mensagens retornadas pelas exceções e a ausência de chamadas aos repositórios de totais e notas.
+  - Quando a persistência dos totais falhou, foi confirmado que o erro foi tratado e que o fluxo não prosseguiu para a persistência da nota.
+  - Quando a persistência da nota falhou, foi verificada a mensagem de erro e confirmado que a operação ocorreu após a chamada de persistência dos totais.
+  - Após as correções da inspeção estática, a execução conjunta com os 25 casos unitários totalizou 30 testes aprovados, sem falhas ou erros.
+  - A validação abrange a integração entre os serviços e o tratamento das falhas simuladas.
+
+## Registro 15 - Criar testes de sistema utilizando Selenium para NotaFiscalService (Entrega 2)
+
+- **Responsável:** Rafael Valverde Teixeira
+- **Atividade:** Implementar testes de sistema utilizando Selenium para os fluxos de nota fiscal.
+- **Ferramenta:** ChatGPT Codex, modelo GPT-6 Astra médio.
+- **Prompt/instrução:** Me ajude a implementar uma suíte de testes de sistema utilizando Selenium para a classe NotaFiscalService.
+- **Resultado:**
+  - Foram criadas as classes `NotaFiscalSeleniumTest` e `NotaFiscalSegurancaSeleniumTest`, além das classes de apoio `NotaFiscalSeleniumSupport` e `NotaFiscalPage`, reutilizando a `LoginPage` existente.
+  - Foram implementados 3 cenários funcionais: cadastro válido com consulta e reabertura da nota, tentativa de cadastro sem natureza da operação e tentativa de cadastro sem destinatário.
+  - Para o requisito não funcional de segurança, foram implementados 2 casos de acesso sem autenticação, abrangendo as rotas `/notafiscal` e `/notafiscal/form`.
+- **Decisão:**
+  - Manter os novos testes criados.
+  - Validar os fluxos pela interface da aplicação em execução, utilizando Chrome e ChromeDriver.
+  - Adotar o controle de acesso como requisito não funcional, verificando o redirecionamento de usuários não autenticados para o login.
+  - Limitar o cenário de cadastro à criação de uma nota, sem executar emissão fiscal, geração de XML ou comunicação com a SEFAZ.
+  - Configurar a abertura da janela do navegador como comportamento padrão para permitir acompanhar a execução.
+- **Validação:**
+  - Foram executados os 3 cenários funcionais de `NotaFiscalSeleniumTest` e os 2 casos de segurança de `NotaFiscalSegurancaSeleniumTest`, totalizando: `Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`.
+  - No cadastro válido, foram verificados a criação da nota, o incremento da quantidade de registros na listagem e os valores de número, modelo, série e tipo. Após reabrir a nota, foram conferidos a natureza da operação, o destinatário e o tipo informado.
+  - Na tentativa de cadastro sem natureza da operação, foi verificada a mensagem de validação, a permanência no formulário e a ausência de criação de uma nova nota.
+  - Na tentativa de cadastro sem destinatário, também foram conferidos o alerta correspondente, a permanência no formulário e a manutenção da quantidade de notas cadastradas.
+  - Nos casos de segurança, o acesso sem autenticação às rotas `/notafiscal` e `/notafiscal/form` resultou em redirecionamento para a página de login.
+  - Os cinco casos foram reexecutados, após as correções da inspeção estática, e continuaram passando, com resultado `BUILD SUCCESS`.
+  - As capturas dos cenários foram salvas em `target/selenium-evidencias/notafiscal`, e o log da revalidação foi registrado em `target/selenium-notafiscal-revalidacao.log`.
