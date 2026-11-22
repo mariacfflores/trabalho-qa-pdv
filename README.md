@@ -74,6 +74,8 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Rafael](https://docs.google.com/document/d/14oNxYhkQSSI2wKQV0KaiXTLX1JOkNECBWBm7FbJdrw0/edit?tab=t.0#heading=h.1voh1nmhiv9s)
 
+[Plano de Teste Rafael (entrega 2)](https://docs.google.com/document/d/17VKMlqF4w2aD47fp2IT1u-4XV8XebSvgpusfh1vxKYc/edit?usp=sharing)
+
 # Evidências de Complexidade Ciclomática
 
 A complexidade ciclomática das classes candidatas foi medida com o SonarQube.
