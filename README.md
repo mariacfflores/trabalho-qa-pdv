@@ -657,10 +657,10 @@ Os casos foram projetados a partir das regras de negócio da classe, utilizando 
 
 ## Técnica estrutural — JaCoCo
 
-| Métrica | Resultado |
-|---|---|
+| Métrica                     | Resultado       |
+| --------------------------- | --------------- |
 | **Arestas (todas-arestas)** | **38/40 = 95%** |
-| Linhas | 105/115 |
+| Linhas                      | 105/115         |
 
 O critério de pelo menos 80% de cobertura de arestas foi atendido.
 
@@ -670,8 +670,8 @@ Antes das correções do SonarQube, a cobertura era de **31/34 = 91%** ([jacoco_
 
 ## Teste baseado em defeitos — PIT
 
-| Métrica | Resultado |
-|---|---|
+| Métrica               | Resultado       |
+| --------------------- | --------------- |
 | **Escore de mutação** | **44/48 = 92%** |
 
 O critério de pelo menos 80% de escore de mutação foi atendido.
@@ -684,11 +684,11 @@ Na primeira execução, o escore era de **75%**. Os mutantes sobreviventes revel
 
 Os 4 mutantes restantes não podem ser mortos:
 
-| Mutante | Motivo |
-|---|---|
-| `vlsobra < 0` → `<= 0` | Equivalente: substituir 0 por 0 não altera o resultado |
-| `vlquitado < 0` → `<= 0` | Equivalente pelo mesmo motivo |
-| `* -1` → `/ -1` | Equivalente: multiplicar ou dividir por -1 produz o mesmo valor |
+| Mutante                                            | Motivo                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| `vlsobra < 0` → `<= 0`                             | Equivalente: substituir 0 por 0 não altera o resultado                   |
+| `vlquitado < 0` → `<= 0`                           | Equivalente pelo mesmo motivo                                            |
+| `* -1` → `/ -1`                                    | Equivalente: multiplicar ou dividir por -1 produz o mesmo valor          |
 | Remoção de `setRecebimento` no lançamento de caixa | `CaixaLancamento` não possui `getRecebimento()`, impedindo a verificação |
 
 Evidência: [pit_recebimento_mutacao_depois.png](docs/evidencias/mutacao/pit_recebimento_mutacao_depois.png)
@@ -705,12 +705,12 @@ mvn test-compile org.pitest:pitest-maven:mutationCoverage@caio
 
 Os testes de integração verificam a interação entre a `RecebimentoService` e os serviços reais dos quais ela depende. Apenas a camada de persistência foi substituída por dublês:
 
-| Real | Simulado (mock) |
-|---|---|
-| `RecebimentoService` | `RecebimentoRepository` |
-| `ParcelaService` | `ParcelaRepository` |
+| Real                        | Simulado (mock)                |
+| --------------------------- | ------------------------------ |
+| `RecebimentoService`        | `RecebimentoRepository`        |
+| `ParcelaService`            | `ParcelaRepository`            |
 | `RecebimentoParcelaService` | `RecebimentoParcelaRepository` |
-| `CaixaLancamentoService` | `CaixaLancamentoRepository` |
+| `CaixaLancamentoService`    | `CaixaLancamentoRepository`    |
 
 Casos de teste:
 
@@ -761,15 +761,15 @@ A `RecebimentoService` foi analisada com o plugin SonarQube for IDE (Eclipse), u
 
 A análise inicial apresentou **34 issues**:
 
-| Qtd | Issue |
-|:-:|---|
-| 1 | Comparação de objetos `Long` com `!=` em vez de `equals()` |
-| 5 | Acesso ao conteúdo de `Optional` sem verificar `isPresent()` |
-| 16 | Uso de exceções genéricas (`RuntimeException`) |
-| 9 | Injeção de dependência por atributo (`@Autowired`) |
-| 1 | Complexidade cognitiva do método `receber` acima do permitido (24, limite 15) |
-| 1 | Uso de `replaceAll()` onde `replace()` é suficiente |
-| 1 | Uso de `System.out` em vez de logger |
+| Qtd | Issue                                                                         |
+| :-: | ----------------------------------------------------------------------------- |
+|  1  | Comparação de objetos `Long` com `!=` em vez de `equals()`                    |
+|  5  | Acesso ao conteúdo de `Optional` sem verificar `isPresent()`                  |
+| 16  | Uso de exceções genéricas (`RuntimeException`)                                |
+|  9  | Injeção de dependência por atributo (`@Autowired`)                            |
+|  1  | Complexidade cognitiva do método `receber` acima do permitido (24, limite 15) |
+|  1  | Uso de `replaceAll()` onde `replace()` é suficiente                           |
+|  1  | Uso de `System.out` em vez de logger                                          |
 
 Evidência: [sonar_recebimento_antes.png](docs/evidencias/sonar/sonar_recebimento_antes.png)
 
@@ -865,6 +865,8 @@ BUILD SUCCESS
 
 ## Cobertura estrutural — JaCoCo
 
+### Pré-Sonar
+
 A cobertura da `NotaFiscalService` foi medida executando apenas sua suíte unitária.
 
 | Métrica                 |      Resultado |
@@ -875,9 +877,25 @@ A cobertura da `NotaFiscalService` foi medida executando apenas sua suíte unit�
 
 A cobertura de branches supera a meta mínima de **80%**.
 
-Evidência armazenada em: [cobertura da NotaFiscalService](docs/evidencias/cobertura/jacoco_notafiscalservice_cobertura.png).
+Evidência armazenada em: [cobertura da NotaFiscalService pré sonar](docs/evidencias/cobertura/jacoco_notafiscalservice_cobertura.png).
+
+### Pós-Sonar
+
+Após as correções dos apontamentos dos SonarQUbe a cobertura de `NotaFiscalService` mudou, continuando 100%, porém o mudando o número de instruções, branches e linhas.
+
+| Métrica                 |      Resultado |
+| ----------------------- | -------------: |
+| Cobertura de instruções | 100% (369/369) |
+| Cobertura de branches   |   100% (16/16) |
+| Cobertura de linhas     |   100% (83/83) |
+
+A cobertura de branches supera a meta mínima de **80%**.
+
+Evidência armazenada em: [cobertura da NotaFiscalService pós sonar](docs/evidencias/cobertura/jacoco_notafiscalservice_cobertura_pos_sonar.png).
 
 ## Teste baseado em defeitos — PIT Mutation Testing
+
+### Pré-Sonar
 
 O PIT foi executado sobre a mesma classe da análise estrutural.
 
@@ -891,7 +909,23 @@ O PIT foi executado sobre a mesma classe da análise estrutural.
 
 O escore de mutação superou a meta de **80%**.
 
-Evidência versionada: [mutação da NotaFiscalService](docs/evidencias/mutacao/pit_notafiscalservice_mutacao.png).
+Evidência versionada: [mutação da NotaFiscalService pré sonar](docs/evidencias/mutacao/pit_notafiscalservice_mutacao.png).
+
+### Pós-Sonar
+
+Após as correções dos apontamentos dos SonarQUbe o escore de mutação `NotaFiscalService` aumentou.
+
+| Métrica                | Resultado |
+| ---------------------- | --------: |
+| Mutações geradas       |        27 |
+| Mutações eliminadas    |        27 |
+| Mutation Coverage      |      100% |
+| Mutantes sem cobertura |         0 |
+| Test Strength          |      100% |
+
+O escore de mutação superou a meta de **80%**.
+
+Evidência versionada: [mutação da NotaFiscalService pós sonar](docs/evidencias/mutacao/pit_notafiscalservice_mutacao_pos_sonar.png).
 
 ## Teste funcional Selenium — cadastro e consulta de nota fiscal
 
