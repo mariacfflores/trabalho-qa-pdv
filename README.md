@@ -64,7 +64,7 @@ O Plano de Teste do grupo, cobrindo escopo, metodologia, papéis e responsabilid
 
 [Plano de Teste Caio](https://docs.google.com/document/d/1HouMVtqafT6ep99kNRwE5euOWJaCqn8d_pxWfyq-WeM/edit?usp=drivesdk)
 
-[Plano de Teste Caio (entrega 2)](https://docs.google.com/document/d/12Hu8ioaGWV0IwaVDiwYGnaNHKZD_UWUPOdqbw45WjwM/edit?usp=sharing)
+[Plano de Teste Caio (entrega 2)](https://docs.google.com/document/d/1AEt381z8GaVC8Yx6x8R7stnADTxN3dBm_WaziUXROks/edit?tab=t.0)
 
 [Plano de Teste Maria e Paulo (entrega 1)](https://docs.google.com/document/d/1PfXhP2IU5gOzz4gJFks5v7bhcU9vVkbyapyMUr6iKgM/edit?tab=t.0)
 
