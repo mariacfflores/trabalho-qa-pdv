@@ -691,7 +691,9 @@ Os 4 mutantes restantes não podem ser mortos:
 | `* -1` → `/ -1` | Equivalente: multiplicar ou dividir por -1 produz o mesmo valor |
 | Remoção de `setRecebimento` no lançamento de caixa | `CaixaLancamento` não possui `getRecebimento()`, impedindo a verificação |
 
-Evidência: [pit_recebimento_mutacao.png](docs/evidencias/mutacao/pit_recebimento_mutacao.png)
+Evidência: [pit_recebimento_mutacao_depois.png](docs/evidencias/mutacao/pit_recebimento_mutacao_depois.png)
+
+Resultado antes das correções do SonarQube (88%): [pit_recebimento_mutacao.png](docs/evidencias/mutacao/pit_recebimento_mutacao.png)
 
 Foi criada uma execução própria do PIT no `pom.xml`, que analisa apenas a `RecebimentoService`:
 
@@ -742,6 +744,8 @@ Arquivos:
 
 - [RecebimentoSeleniumTest.java](src/test/java/net/originmobi/pdv/selenium/RecebimentoSeleniumTest.java)
 - [RecebimentoPage.java](src/test/java/net/originmobi/pdv/selenium/page/RecebimentoPage.java)
+
+Evidência: [selenium_funcional_recebimento.png](docs/evidencias/selenium/selenium_funcional_recebimento.png)
 
 Com a aplicação em execução (`docker compose up -d`):
 
